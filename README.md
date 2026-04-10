@@ -44,9 +44,6 @@ Edit `mysite/settings.py` and set:
 - `DEBUG = True`
 - `ALLOWED_HOSTS = ['127.0.0.1', 'localhost']`
 
-Why this is needed:
-- Current file is configured for production (`DEBUG = False`)
-- Current `ALLOWED_HOSTS` only allows `ikosmaz.pythonanywhere.com`
 
 ## 5. Apply database migrations
 
