@@ -11,7 +11,7 @@ Local run instructions for this Django project.
 ## 1. Open project folder
 
 ```bash
-cd .../django_apps/django_projects/mysite
+cd .../django_projects/mysite
 ```
 
 ## 2. Create and activate a virtual environment
