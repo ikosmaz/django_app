@@ -144,8 +144,9 @@ class AdListView(OwnerListView):
         else:
             ads = ads.order_by("-updated_at")
 
-        # --- PAGINATOR 5 PER PAGE CAN BE CHANGED---
-        paginator = Paginator(ads, 6)
+        # --- PAGINATOR 6 PER PAGE CAN BE CHANGED---
+        number_per_page = 6
+        paginator = Paginator(ads, number_per_page)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
 
@@ -182,7 +183,8 @@ class AdListView(OwnerListView):
             'cities': cities,
             'categories': categories,
             'number_of_ads':number_of_ads,
-            "price_form": price_form,
+            'price_form': price_form,
+            'number_per_page': number_per_page,
         }
 
         retval = render(request, self.template_name, ctx)
