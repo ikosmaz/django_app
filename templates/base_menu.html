@@ -1,0 +1,103 @@
+{% extends "base_bootstrap.html" %}
+{% block navbar %}
+{% load app_tags %}
+{% load static %}
+<style>
+.menu-unread-icon {color: red; margin-right: 2px;} !important
+.menu-read-icon {color: #009a90; margin-right: 6px;}
+.menu-user-welcome {color: #404040; padding-left: 10px; display: inline-block;}
+.adm-button {background-color:#00A693; color:white !important; margin-left: 10px;margin-right: 20px;}
+.adm-button:hover {background-color:#66CDAA !important;color:black !important;}
+</style>
+<nav class="navbar navbar-default app-navbar navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+        <!--<a class="navbar-brand" href="/"><b>{{ settings.APP_NAME }}</b></a>-->
+
+<a class="navbar-brand" href="/" style="display:flex; align-items:center;">
+     <i class="fab fa-lg fa-phoenix-squadron" style="margin-right:10px;margin-left:10px;"></i>
+    <b>{{ settings.APP_NAME }}</b>
+</a>
+
+    </div>
+    <!-- https://stackoverflow.com/questions/22047251/django-dynamically-get-view-url-and-check-if-its-the-current-page -->
+    <div class="collapse navbar-collapse" id="myNavbar">
+
+    <ul class="nav navbar-nav navbar-right">
+        {% if user.is_authenticated %}
+        <li>
+        <a href="{% url 'ads:ad_create' %}"><b>Add an Ad</b></a>
+        </li>
+
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                <b>Messages</b>
+                {% if menu_unread_messages_count %}
+                    <span class="badge">{{ menu_unread_messages_count }}</span>
+                {% endif %}
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu" style="min-width:360px; max-width:420px; font-size:85%; max-height:225px; overflow-y:auto; overflow-x:hidden;">
+                {% if menu_messages %}
+                    {% for menu_message in menu_messages %}
+                    <li>
+                        <a href="{% url 'ads:ad_detail' menu_message.ad.id %}#messages-panel"
+                           style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            {% if menu_message.is_read %}
+                            <i class="fa fa-check menu-read-icon" title="Read"></i>
+                            {% else %}
+                            <i class="fas fa-envelope menu-unread-icon"></i>
+                            {% endif %}
+                            <strong>From:</strong> {{ menu_message.sender.username }}
+                            |
+                            <strong>Date:</strong> {{ menu_message.created_at }}
+                            |
+                            <strong>Ad:</strong>
+                            {{ menu_message.ad.title|slice:":35" }}{% if menu_message.ad.title|length > 100 %}...{% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li><a href="#" onclick="return false;">No messages yet.</a></li>
+                {% endif %}
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                <img style="width: 25px;" src="{{ user|gravatar:60 }}"/><b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+            <li style="white-space:nowrap; padding:8px 12px;">
+                <form method="post" action="{% url 'logout' %}" style="display:inline-block; margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'ads:all' %}">
+                <button type="submit" class="btn btn-default btn-xs" style="padding:4px 8px; margin:0;"><i class="fa fa-sign-out fa-lg" aria-hidden="true"></i> Logout</button>
+                </form>
+
+            <span class="menu-user-welcome">
+            Welcome &nbsp; <i {% if user.is_staff %} class="fa fa-user-plus" {% else %} class="fa fa-user" {% endif %}></i> <b>{{ user }}</b>
+            </span>
+            {% if user.is_authenticated and user.is_staff %}
+                <li>
+                    <a href="{% url 'admin:index' %}" class="btn btn-secondary adm-button">Admin page</a>
+                </li>
+            {% endif %}
+            </li>
+            </ul>
+        </li>
+        {% else %}
+        <li>
+        <a href="{% url 'login' %}?next={% url 'ads:all' %}" ><i class="fa fa-spinner fa-spin fa-fw"></i> Login</a>
+        </li>
+        {% endif %}
+    </ul>
+    </div>
+  </div>
+</nav>
+
+{% endblock %}

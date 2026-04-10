@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<title>{% block title %}{{ settings.APP_NAME }}{% endblock %}</title>
+
+<!-- <meta name="dj4e" content="70b0fe89ee50140bd6580640a4d70e7e">
+<meta name="dj4e-code" content="42162706489578"> -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    crossorigin="anonymous">
+
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css"
+    crossorigin="anonymous">
+
+<link rel="stylesheet"
+    href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css"
+     crossorigin="anonymous">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+    crossorigin="anonymous"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+    crossorigin="anonymous"></script>
+
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"
+  crossorigin="anonymous"></script>
+
+<style>
+:root {
+    --accent: #009a90;
+    --accent-dark: #006d66;
+    --text-main: #333333;
+    --text-muted: #777777;
+    --bg-main: #f5f7f8;
+    --surface: #ccf3dc;
+    --surface-soft: #eefaf9;
+    --border-soft: #d9d9d9;
+}
+
+body {
+    padding-top: 50px;
+    padding-left:0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+a {
+    color: var(--accent);
+}
+
+a:hover,
+a:focus {
+    color: var(--accent-dark);
+}
+
+.navbar.app-navbar {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.navbar.app-navbar .navbar-brand,
+.navbar.app-navbar .navbar-nav > li > a {
+    color: var(--text-main) !important;
+}
+
+.navbar.app-navbar .navbar-brand:hover,
+.navbar.app-navbar .navbar-nav > li > a:hover,
+.navbar.app-navbar .navbar-nav > li > a:focus {
+    color: var(--accent-dark) !important;
+    background: transparent;
+}
+
+.navbar.app-navbar .navbar-toggle {
+    border-color: var(--border-soft);
+}
+
+.navbar.app-navbar .navbar-toggle .icon-bar {
+    background-color: var(--text-muted);
+}
+
+.dropdown-menu {
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary.active {
+    border-color: var(--accent-dark);
+}
+
+.btn-default:hover,
+.btn-default:focus,
+.btn-default.active {
+    border-color: var(--border-soft);
+}
+
+.badge {
+    background-color: var(--accent);
+}
+</style>
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+
+<meta name="dj4e-version" content="2021-04-14">
+
+{% block head %} {% endblock %}
+
+</head>
+<body>
+<div class="container">
+{% block navbar %} {% endblock %}
+{% block welcome %} {% endblock %}
+{% block messages %}
+    {% if messages %}
+    {% for msg in messages %}
+        <div class="alert alert-{{msg.level_tag}}" role="alert">
+        {{msg.message}}
+        </div>
+    {% endfor %}
+    {% endif %}
+{% endblock %}
+{% block content %}
+{% endblock %}
+</div>
+{% block footer %} {% endblock %}
+</body>
+</html>

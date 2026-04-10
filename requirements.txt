@@ -1,0 +1,23 @@
+# To activate on windows run
+#
+# py -m venv .venv-win
+# .\.venv-win\Scripts\Activate.ps1
+# pip install -r requirements.txt
+# python manage.py runserver 127.0.0.1:8000 --noreload to run app locally
+#
+# On a Macintosh this should be python3 and pip3
+#
+Django>=3.1.4
+django-bootstrap3>=23.1
+django-crispy-forms>=1.8.1
+crispy-bootstrap3>=2024.1
+django-filter>=2.2.0
+djangorestframework>=3.10.3
+Markdown>=3.0.1
+social-auth-app-django>=3.1.0
+social-auth-core>=3.3.3
+django-extensions>=2.2.5
+django-taggit>=1.3.0
+mysqlclient>=1.4.6
+cryptography>=42.0.0
+Pillow
