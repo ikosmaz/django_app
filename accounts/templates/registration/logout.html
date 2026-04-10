@@ -1,0 +1,12 @@
+{% extends "base_bootstrap.html" %}
+
+{% block content %}
+<h2>Are you sure you want to log out?</h2>
+
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary">Logout</button>
+</form>
+
+{% endblock %}

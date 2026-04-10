@@ -1,0 +1,31 @@
+
+{% extends "base_menu.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<p>
+  <form action="" method="post" id="upload_form" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input class="btn btn-secondary" style="background:#008005;color:#ffffff;" type="submit" value="Save">
+    {% if ad %}
+    <input class="btn btn-secondary" style="background:#1c1cf0;color:#ffffff;" type="submit" value="Cancel" onclick="window.location.href='{% url 'ads:ad_detail' ad.id %}';return false;">
+    <input class="btn btn-secondary" style="background:#800020; color:#ffffff;" type="submit" value="Delete the Ad" onclick="window.location.href='{% url 'ads:ad_delete' ad.id %}';return false;">
+    {% else %}
+    <input class="btn btn-secondary" style="background:#1c1cf0;color:#ffffff;" type="submit" value="Cancel" onclick="window.location.href='{% url 'ads:all' %}';return false;">
+    {% endif %}
+  </form>
+</p>
+<!-- https://stackoverflow.com/questions/2472422/django-file-upload-size-limit -->
+<script>
+$("#upload_form").submit(function() {
+  console.log('Checking file size');
+  if (window.File && window.FileReader && window.FileList && window.Blob) {
+      var file = $('#id_{{ form.upload_field_name }}')[0].files[0];
+      if (file && file.size > {{ form.max_upload_limit }} ) {
+          alert("File " + file.name + " of type " + file.type + " must be < {{ form.max_upload_limit_text }}");
+      return false;
+    }
+  }
+});
+</script>
+{% endblock %}

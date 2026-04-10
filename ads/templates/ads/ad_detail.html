@@ -1,0 +1,473 @@
+{% extends "base_menu.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load static %}
+
+{% block head %}
+<style>
+.commentlist {margin-bottom: 2px;}
+.commentlist:hover {background-color: #f5f7f8;}
+.submit-row:hover {background-color: #eefaf9;}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: none;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.added_by {color: #c93a0d;}
+.panel-title {font-weight: bold;}
+
+/* Base styling for both images */
+#img1, #img2 {border-radius: 15px; object-fit: contain;}
+
+/* Desktop / Large screen */
+#img1 {border: 2px solid #d9d9d9; margin-top: 70px; max-height: 90vh;}
+
+#img2 {max-width: 40%; max-height: 30vh; margin-top: 10px; margin-bottom: 10px;}
+
+/* Landscape override for img1 (added via JS) */
+#img1.landscape {max-width: 90%; max-height: auto;}
+
+.panel-heading {display: flex; align-items: center;min-height:40px;}
+.panel-heading-msg {display: flex; align-items: center;height:35px;background:var(--surface-soft); cursor:pointer;}
+.panel-body {
+    border: 1px solid #ccc;   /* change color as desired */
+    border-radius: 6px;       /* optional: rounded corners */
+    background: #fff;         /* keeps card clean against gray background */
+    margin-top: 8px;
+    margin-bottom: 20px;
+    margin-left:-13px;
+    margin-right:-15px;
+}
+/* Mobile */
+@media screen and (max-width: 780px) {
+
+    #img1 {max-width: 96%; max-height: 90vh; border: 2px solid #d9d9d9;}
+
+    #img2 {max-width: 80%; max-height: 30vh; margin-top: 15px; margin-bottom: 10px;}
+    .col-body {padding-left:0px; padding-right:0;} !importent
+
+}
+
+.panel-body-msg {margin-left:15px; margin-right:10px;margin-top:5px;}
+.icon-group {margin-left: auto; font-size: 1.2rem;}
+.icon-group a {color: #333; text-decoration: none;}
+.icon-group a:hover {color: #006d66;}
+.fa {color: #009a90;}
+.fa-thumbs-up, .fa-thumbs-o-up, .fa-trash {margin-bottom:10px;}
+.section-toggle {margin-bottom: 12px;}
+.message-row {margin-left: -15px; margin-right:-15px; margin-bottom: 8px;}
+.comment-row {margin-left: 0;margin-right:0;}
+.owner-reply {margin-left: 30px;color:#009a90;}
+.message-form-wrap {position: relative; margin-top: -4px;}
+.message-input {width: 100%; padding-right: 44px; resize: vertical;}
+.message-send-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border: 0;
+  background: transparent;
+  color: #009a90;
+  font-size: 1.2em;
+  padding: 0;
+}
+.comment-send-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border: 0;
+  background: transparent;
+  color: #009a90;
+  font-size: 1.2em;
+  padding: 0;
+  margin-bottom:5px;
+}
+.message-send-btn:hover {color: #006d66;}
+
+.btn-group .btn {
+    display: inline-flex;
+    align-items: center;      /* vertical centering */
+    gap: 6px;                 /* space between icon / text / badge */
+    height: 38px;             /* fixed height (adjust if needed) */
+    line-height: 1;           /* prevent text stretching */
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
+.price-row {display: flex; justify-content: space-between; align-items: center;  width: 100%;}
+.like-icons a {margin-left: 8px; font-size: 115%;}
+.price-text {font-size:1.5rem;}
+.ad-city {color: #555; font-size: 105%;}
+.cat-city {display:flex; justify-content:space-between; align-items:center;}
+.comment-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -5px;
+}
+
+.commented_by {
+    margin-bottom: 5px;
+    line-height: 1.1;
+    font-size: 0.85em;
+    color: #c93a0d;
+}
+
+.comment-text {
+    margin-bottom:4px;
+    margin-top:4px;
+}
+
+.comment-actions a {
+    margin-left: 6px;
+}
+
+.hidden-section {
+  display: none;
+}
+
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+<br>
+<div class="col-body col-xs-12 col-sm-12 col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2 class="panel-title">{{ ad.title }}</h2>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-6">
+    <div class="panel-body">
+    <p class="price-row">
+        <span class="price-text">Price: {{ ad.price }} NOK</span>
+
+       {% if user.is_authenticated %}
+       <span class="like-icons">
+           <a href="#" title="Unlike"
+               onclick="likePost('{% url 'ads:ad_unfavorite' ad.id %}', 'ad', {{ ad.id }}); return false;"
+               {% if ad.id not in favorites %}style="display:none;"{% endif %}
+               id="ad_favorite_star_{{ ad.id }}">
+              <i class="fa fa-heart"></i>
+            </a>
+
+            <a href="#" title="Like"
+                onclick="likePost('{% url 'ads:ad_favorite' ad.id %}', 'ad', {{ ad.id }}); return false;"
+                {% if ad.id in favorites %}style="display:none;"{% endif %}
+               id="ad_unfavorite_star_{{ ad.id }}">
+              <i class="fa fa-heart-o"></i>
+            </a>
+        </span>
+        {% endif %}
+    </p>
+    <div class="cat-city">
+    <p class="price-text">Category: {{ ad.category.name }}&nbsp; <i class="{{ ad.category.icon|default:'fas fa-tag' }}"></i></p>
+    <p class="ad-city">
+        <i class="fa fa-map-marker"></i>
+        {% if ad.city == None %}
+        <a href="https://www.google.com/maps?q=Norway" target="_blank" title="View {{ ad.city }} on Goole Maps">
+            {{ ad.city }}
+        </a>
+        {% else %}
+        <a href="https://www.google.com/maps?q={{ ad.city | urlencode }},Norway" target="_blank" title="View {{ ad.city }} on Goole Maps">
+            {{ ad.city }}
+        </a>
+        {% endif %}
+    </p>
+    </div>
+
+      <p style="font-size:110%;">Detail: {{ ad.text }}</p>
+      <span class="added_by"><em>(Added by {{ ad.owner }} on {{ ad.updated_at }})</em></span>
+        {% if ad.owner == user %}
+        <p style="text-align: right; margin-top:10px;">Edit or delete the ad &nbsp;
+            <a title="Edit" href="{% url 'ads:ad_update' ad.id %}"><i class="fa fa-pencil"></i></a> &nbsp;|&nbsp;
+            <a title="Delete" href="{% url 'ads:ad_delete' ad.id %}"><i class="fa fa-trash"></i></a>
+        </p>
+        {% endif %}
+
+      {% if ad.picture %}
+      <div id="overlay" class="overlay" style="text-align: center;"
+           onclick="document.getElementById('overlay').style.display='none';">
+        <img id="img1" src="{{ ad.picture.url }}" alt="">
+      </div>
+      <div style="margin-top:10px;">
+        <img id="img2" src="{{ ad.picture.url }}" alt=""
+             onclick="document.getElementById('overlay').style.display='block';">
+      </div>
+      {% else %}
+        <div id="overlay" class="overlay" style="text-align: center;"
+         onclick="document.getElementById('overlay').style.display='none';">
+        <img id="img1" src="{% static 'no_image.png' %}" alt="">
+        </div>
+
+        <div style="margin-top:10px;">
+        <img id="img2" src="{% static 'no_image.png' %}" alt=""
+             onclick="document.getElementById('overlay').style.display='block';">
+        </div>
+      {% endif %}
+    </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-6">
+    <div class="panel-body">
+      <div class="btn-group section-toggle" role="group">
+        <button type="button" class="btn btn-default active" id="comments-tab" onclick="toggleSection('comments')" style="margin-right:8px;">
+          Comments
+        </button>
+        <button type="button" class="btn btn-default" id="messages-tab" onclick="toggleSection('messages')">
+          Messages
+          {% if ad_unread_messages_count %}
+          <i class="fa fa-exclamation" style="margin-left:6px; color:#006d66;" title="Unread messages"></i>
+          {% endif %}
+        </button>
+      </div>
+
+    <div id="comments-panel">
+
+        <h4>Comments</h4>
+        <div class="btn-group" role="group" style="margin-bottom:10px; margin-right: 8px;">
+          <a class="btn btn-default {% if comment_filter == 'all' %}active{% endif %}"
+             href="{% url 'ads:ad_detail' ad.id %}?comments=all#comments-panel" style="margin-right:8px;">
+            <i class="fa fa-bars"></i> All
+            <span class="badge">{{ all_comments_count }}</span>
+          </a>
+          {% if user.is_authenticated %}
+          <a class="btn btn-default {% if comment_filter == 'liked' %}active{% endif %}"
+             href="{% url 'ads:ad_detail' ad.id %}?comments=liked#comments-panel">
+            <i class="fa fa-thumbs-up"></i> MyLikes
+            <span class="badge">{{ liked_comments_count }}</span>
+          </a>
+          {% endif %}
+        </div>
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'ads:ad_comment_create' ad.id %}">
+            {% csrf_token %}
+            {{ comment_form|crispy }}
+            <div class="message-form-wrap">
+            <button type="submit" class="comment-send-btn" title="Send comment" aria-label="Send reply">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+            </div>
+            </form>
+            {% endif %}
+
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="panel panel-default commentlist comment-row">
+        <div class="panel-body-msg">
+
+        <p class="comment-text">
+            {{ comment.text }}
+        </p>
+
+        <div class="comment-footer">
+            <small class="text-muted commented_by">
+            <em>Commented by {{ comment.owner }} on {{ comment.updated_at }}</em>
+            </small>
+
+        <div class="comment-actions">
+        {% if user.is_authenticated %}
+            <a href="#"
+            onclick="likePost('{% url 'ads:comment_unfavorite' comment.id %}', 'comment', {{ comment.id }}); return false;"
+            {% if comment.id not in comment_favorites %}style="display:none;"{% endif %}
+            id="comment_favorite_star_{{ comment.id }}">
+            <i class="fa fa-thumbs-up"></i>
+            </a>
+
+            <a href="#"
+            onclick="likePost('{% url 'ads:comment_favorite' comment.id %}', 'comment', {{ comment.id }}); return false;"
+            {% if comment.id in comment_favorites %}style="display:none;"{% endif %}
+            id="comment_unfavorite_star_{{ comment.id }}">
+            <i class="fa fa-thumbs-o-up"></i>
+            </a>
+        {% endif %}
+
+        {% if user == comment.owner %}
+            <a href="{% url 'ads:ad_comment_delete' comment.id %}">
+            <i class="fa fa-trash"></i>
+            </a>
+        {% endif %}
+        </div>
+        </div>
+
+        </div>
+        </div>
+          {% endfor %}
+        {% else %}
+        <p style="color:#777777;">No comment yet, be the first one.</p>
+        {% endif %}
+    </div>
+
+      <div id="messages-panel" class="hidden-section">
+        <h4>Messages</h4>
+        {% if user.is_authenticated %}
+          {% if user == ad.owner %}
+          <p style="color:#777777;">Reply to incoming questions below.</p>
+          {% endif %}
+
+          {% if message_threads %}
+            {% for thread in message_threads %}
+            <div class="panel panel-default message-row">
+                <div class="panel-heading-msg  message-toggle">
+                    <p style="margin-left:10px;margin-bottom:0;">Messages with <strong>{{ thread.user.username }}</strong>
+                    <span class="toggle-icon">▼</span>
+                    {% for message in thread.messages %}
+                    {% if not message.is_read and message.sender != user%}
+                        <i class="fa fa-exclamation" style="margin-left:6px; color:#006d66;" title="Unread messages"></i>
+                    {% endif %}
+                    {% endfor %}
+                    </p>
+                </div>
+
+              <div class="panel-body-msg hidden-section">
+                {% for message in thread.messages %}
+
+                <div class="{% if message.sender == ad.owner and message.parent_id %}owner-reply{% endif %}" style="margin-bottom:10px;">
+                  <p style="margin-bottom:4px;">➡ {{ message.text }}</p>
+                  <small class="text-muted commented_by">
+                    <em>Sent by
+                    {% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %} on {{ message.created_at }}</em>
+                  </small>
+
+                  {% if user == ad.owner and message.sender != user %}
+                  <div style="margin-top:8px;">
+                    <a href="#" onclick="toggleReplyForm({{ message.id }}); return false;">Reply</a>
+                  </div>
+                  <form id="reply-form-{{ message.id }}"
+                        action="{% url 'ads:ad_message_reply' message.id %}"
+                        method="post"
+                        class="hidden-section"
+                        style="margin-top:8px;">
+                    {% csrf_token %}
+                    <div class="message-form-wrap">
+                      <textarea name="encrypted_text" rows="2" class="form-control message-input" required></textarea>
+                      <button type="submit" class="message-send-btn" title="Send" aria-label="Send reply">
+                        <i class="fa fa-paper-plane"></i>
+                      </button>
+                    </div>
+                  </form>
+                  {% endif %}
+
+                </div>
+                {% if not forloop.last %}
+                <hr style="margin-bottom:2px; margin-top:-10px;">
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <p style="color:#777777;">No messages yet...</p>
+          {% endif %}
+
+          {% if user != ad.owner %}
+          <form method="post" action="{% url 'ads:ad_message_create' ad.id %}">
+            {% csrf_token %}
+            <div class="message-form-wrap">
+              {{ message_form.encrypted_text }}
+              <button type="submit" class="message-send-btn" title="Send message" aria-label="Send message">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </div>
+          </form>
+          {% endif %}
+        {% else %}
+        <p><a href="{% url 'login' %}?next={% url 'ads:all' %}" >Log in</a> to view and send messages.</p>
+        {% endif %}
+      </div>
+
+    </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function likePost(url, kind, id) {
+    $.post(url, {}, function() {
+        $("#" + kind + "_unfavorite_star_" + id).toggle();
+        $("#" + kind + "_favorite_star_" + id).toggle();
+    }).fail(function(xhr) {
+        alert('Url failed with ' + xhr.status + ' ' + url);
+    });
+}
+
+function toggleSection(section) {
+    var commentsPanel = document.getElementById('comments-panel');
+    var messagesPanel = document.getElementById('messages-panel');
+    var commentsTab = document.getElementById('comments-tab');
+    var messagesTab = document.getElementById('messages-tab');
+
+    if (section === 'messages') {
+        commentsPanel.classList.add('hidden-section');
+        messagesPanel.classList.remove('hidden-section');
+        commentsTab.classList.remove('active');
+        messagesTab.classList.add('active');
+        window.location.hash = 'messages-panel';
+    } else {
+        commentsPanel.classList.remove('hidden-section');
+        messagesPanel.classList.add('hidden-section');
+        commentsTab.classList.add('active');
+        messagesTab.classList.remove('active');
+        window.location.hash = 'comments-panel';
+    }
+}
+
+function toggleReplyForm(messageId) {
+    var form = document.getElementById('reply-form-' + messageId);
+    form.classList.toggle('hidden-section');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#messages-panel') {
+        toggleSection('messages');
+    } else {
+        toggleSection('comments');
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.tagName.toLowerCase() !== 'textarea') return;
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const img = document.getElementById("img1");
+    img.onload = function() {
+        if (img.naturalWidth > img.naturalHeight) {
+            img.classList.add("landscape");
+        }
+    };
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const toggles = document.querySelectorAll('.message-toggle');
+
+  toggles.forEach(toggle => {
+    toggle.addEventListener('click', function () {
+      const panelBody = this.nextElementSibling;
+      const icon = this.querySelector('.toggle-icon');
+
+      panelBody.classList.toggle('hidden-section');
+
+      // Change arrow direction
+      if (panelBody.classList.contains('hidden-section')) {
+        icon.textContent = '▼';
+      } else {
+        icon.textContent = '▲';
+      }
+    });
+  });
+});
+
+</script>
+{% endblock %}
