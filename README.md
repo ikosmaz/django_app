@@ -1,4 +1,4 @@
-# MySite Django App
+# Django App
 
 Local run instructions for this Django project.
 
