@@ -6,18 +6,124 @@
 .menu-unread-icon {color: red; margin-right: 2px;} !important
 .menu-read-icon {color: #009a90; margin-right: 6px;}
 .menu-user-welcome {color: #404040; padding-left: 10px; display: inline-block;}
-.adm-button {background-color:#00A693; color:white !important; margin-left: 10px;margin-right: 20px;}
-.adm-button:hover {background-color:#66CDAA !important;color:black !important;}
+.user-dropdown-menu {
+  min-width: 250px;
+  padding: 8px 12px;
+}
+.user-dropdown-row {
+  list-style: none;
+  margin: 0 0 8px 0;
+}
+.user-dropdown-row:last-child {
+  margin-bottom: 0;
+}
+.user-top-row {
+  margin-bottom: 10px;
+}
+.user-top-row .menu-user-welcome {
+  padding: 0;
+  margin-bottom: 8px;
+  display: block;
+}
+.user-action-btn {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  text-align: left;
+}
+.user-edit-btn {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.user-dropdown-menu .btn.user-action-btn,
+.user-dropdown-menu .btn.user-edit-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding-left: 10px !important;
+  color: #333 !important;
+}
+.messages-dropdown-menu .menu-all-messages-item > a {
+  padding-top: 6px;
+  padding-bottom: 4px;
+}
+.messages-dropdown-menu .menu-after-all-divider {
+  margin-top: 3px;
+  margin-bottom: 4px;
+}
+.user-dropdown-menu a.user-action-btn:visited,
+.user-dropdown-menu a.user-edit-btn:visited,
+.user-dropdown-menu a.user-action-btn:hover,
+.user-dropdown-menu a.user-edit-btn:hover,
+.user-dropdown-menu a.user-action-btn:focus,
+.user-dropdown-menu a.user-edit-btn:focus {
+  color: #333 !important;
+}
+@media (max-width: 767px) {
+  .user-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .user-top-row .menu-user-welcome {
+    margin-bottom: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .user-edit-btn {
+    width: 50%;
+    flex: 0 0 50%;
+  }
+}
+
+.hamburger-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: red;
+  color: #fff;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1;
+}
+@keyframes hamburger-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.navbar-toggle.has-unread {
+  animation: hamburger-pulse 1.5s infinite;
+}
 </style>
 <nav class="navbar navbar-default app-navbar navbar-fixed-top">
   <div class="container-fluid">
     <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        </button>
-        <!--<a class="navbar-brand" href="/"><b>{{ settings.APP_NAME }}</b></a>-->
+    <button type="button"
+        class="navbar-toggle {% if menu_unread_messages_count %}has-unread{% endif %}"
+        data-toggle="collapse"
+        data-target="#myNavbar">
+
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+
+    {% if menu_unread_messages_count %}
+    <span class="hamburger-badge">
+        {{ menu_unread_messages_count }}
+    </span>
+    {% endif %}
+    </button>
 
 <a class="navbar-brand" href="/" style="display:flex; align-items:center;">
      <i class="fab fa-lg fa-phoenix-squadron" style="margin-right:10px;margin-left:10px;"></i>
@@ -42,7 +148,13 @@
                 {% endif %}
                 <b class="caret"></b>
             </a>
-            <ul class="dropdown-menu" style="min-width:360px; max-width:420px; font-size:85%; max-height:225px; overflow-y:auto; overflow-x:hidden;">
+            <ul class="dropdown-menu messages-dropdown-menu" style="min-width:360px; max-width:420px; font-size:85%; max-height:225px; overflow-y:auto; overflow-x:hidden;">
+                <li class="menu-all-messages-item">
+                    <a href="{% url 'ads:messages_inbox' %}" style="font-weight:600;">
+                        <i class="fa fa-comments"></i>&nbsp; All messages
+                    </a>
+                </li>
+                <li role="separator" class="divider menu-after-all-divider"></li>
                 {% if menu_messages %}
                     {% for menu_message in menu_messages %}
                     <li>
@@ -69,25 +181,33 @@
         </li>
         <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="dropdown-toggle">
-                <img style="width: 25px;" src="{{ user|gravatar:60 }}"/><b class="caret"></b>
+                <img style="width: 25px; height:25px; object-fit:cover; border-radius:50%;" src="{{ user|avatar_url:60 }}"/><b class="caret"></b>
             </a>
-            <ul class="dropdown-menu">
-            <li style="white-space:nowrap; padding:8px 12px;">
-                <form method="post" action="{% url 'logout' %}" style="display:inline-block; margin:0;">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{% url 'ads:all' %}">
-                <button type="submit" class="btn btn-default btn-xs" style="padding:4px 8px; margin:0;"><i class="fa fa-sign-out fa-lg" aria-hidden="true"></i> Logout</button>
-                </form>
-
-            <span class="menu-user-welcome">
-            Welcome &nbsp; <i {% if user.is_staff %} class="fa fa-user-plus" {% else %} class="fa fa-user" {% endif %}></i> <b>{{ user }}</b>
-            </span>
-            {% if user.is_authenticated and user.is_staff %}
-                <li>
-                    <a href="{% url 'admin:index' %}" class="btn btn-secondary adm-button">Admin page</a>
+            <ul class="dropdown-menu user-dropdown-menu">
+                <li class="user-dropdown-row user-top-row">
+                    <span class="menu-user-welcome">
+                        Welcome &nbsp; <i {% if user.is_staff %} class="fa fa-user-plus" {% else %} class="fa fa-user" {% endif %}></i> <b>{{ user }}</b>
+                    </span>
+                    <a href="{% url 'ads:account_edit' %}" class="btn btn-default user-edit-btn">
+                        <i class="fa fa-user-circle"></i> Edit account
+                    </a>
                 </li>
-            {% endif %}
-            </li>
+                {% if user.is_authenticated and user.is_staff %}
+                <li class="user-dropdown-row">
+                    <a href="{% url 'admin:index' %}" class="btn btn-default user-action-btn">
+                        <i class="fa fa-cog"></i> Admin page
+                    </a>
+                </li>
+                {% endif %}
+                <li class="user-dropdown-row">
+                    <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'ads:all' %}">
+                    <button type="submit" class="btn btn-default user-action-btn">
+                        <i class="fa fa-sign-out fa-lg" aria-hidden="true"></i> Logout
+                    </button>
+                    </form>
+                </li>
             </ul>
         </li>
         {% else %}
@@ -99,5 +219,11 @@
     </div>
   </div>
 </nav>
+
+<script>
+  $('#myNavbar').on('show.bs.collapse', function () {
+    $('.navbar-toggle').removeClass('has-unread');
+  });
+</script>
 
 {% endblock %}
