@@ -1,0 +1,28 @@
+{% extends "base_menu.html" %}
+{% block content %}
+<div class="panel panel-default" style="max-width:560px; margin:20px auto; border-color:#800020;">
+  <div class="panel-heading" style="background:#fff3f3;">
+    <h3 class="panel-title" style="color:#800020;">Delete account</h3>
+  </div>
+  <div class="panel-body">
+    <p style="color:#800020; font-weight:700;">
+      Warning: This action is permanent.
+    </p>
+    <p>
+      If you continue, we will send a deletion confirmation link to your email (<b>{{ user.email }}</b>).
+      Your account will be deleted only after you click that link.
+    </p>
+    <p>
+      After confirmation, all ads you own and related account data will be removed permanently.
+    </p>
+    <hr>
+    <form method="post" action="{% url 'ads:account_delete' %}">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">
+        <i class="fa fa-envelope"></i> Send deletion link
+      </button>
+      <a href="{% url 'ads:account_edit' %}" class="btn btn-default">Back</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

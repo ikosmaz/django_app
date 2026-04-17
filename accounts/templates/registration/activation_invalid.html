@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invalid Link - {{ settings.APP_NAME }}</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'login-neu/style.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Invalid or expired link</h2>
+                <p>This activation link is not valid anymore.</p>
+                <p>Register again to receive a new confirmation email.</p>
+            </div>
+            <div class="signup-row">
+                <div class="signup-card clickable" onclick="window.location='{% url 'ads:register' %}'">
+                    <p>Go to <b>Register</b></p>
+                </div>
+                <div class="signup-card clickable" onclick="window.location='{% url 'ads:all' %}'">
+                    <p>Back to <b>Home page</b></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation - {{ settings.APP_NAME }}</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'login-neu/style.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Check your email</h2>
+                <p>We sent an activation link to <b>{{ email }}</b>.</p>
+                <p>Open that link to activate your account, then log in.</p>
+            </div>
+            <div class="signup-row">
+                <div class="signup-card clickable" onclick="window.location='{% url 'login' %}'">
+                    <p>Go to <b>Sign in</b></p>
+                </div>
+                <div class="signup-card clickable" onclick="window.location='{% url 'ads:all' %}'">
+                    <p>Back to <b>Home page</b></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

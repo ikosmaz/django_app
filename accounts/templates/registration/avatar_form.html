@@ -1,0 +1,153 @@
+{% extends "base_menu.html" %}
+{% load app_tags %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<style>
+  .avatar-crop-wrap {
+    display: none;
+    margin-top: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f6f8fa;
+  }
+  .avatar-crop-image {
+    display: block;
+    max-width: 100%;
+    max-height: 360px;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="panel panel-default" style="max-width:520px; margin:20px auto;">
+  <div class="panel-heading">
+    <h3 class="panel-title">Change avatar</h3>
+  </div>
+  <div class="panel-body">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+      <img src="{{ user|avatar_url:96 }}" alt="Current avatar"
+           style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:1px solid #d9d9d9;">
+      <span style="color:#555;">Current avatar for <b>{{ user.username }}</b></span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="avatar-form">
+      {% csrf_token %}
+      {{ form.crop_x }}
+      {{ form.crop_y }}
+      {{ form.crop_w }}
+      {{ form.crop_h }}
+
+      <div class="form-group {% if form.avatar.errors %}has-error{% endif %}">
+        <label for="{{ form.avatar.id_for_label }}">Upload new photo</label>
+        {{ form.avatar }}
+        {% for err in form.avatar.errors %}
+          <div class="help-block">{{ err }}</div>
+        {% endfor %}
+      </div>
+      <div id="avatar-crop-wrap" class="avatar-crop-wrap">
+        <img id="avatar-crop-image" class="avatar-crop-image" alt="Crop avatar preview">
+      </div>
+
+      <div class="checkbox">
+        <label>
+          {{ form.remove_avatar }} Use default avatar
+        </label>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Save avatar</button>
+      <a href="{% url 'ads:all' %}" class="btn btn-default">Cancel</a>
+    </form>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+  (function () {
+    var form = document.getElementById("avatar-form");
+    var avatarInput = document.getElementById("id_avatar");
+    var removeCheckbox = document.getElementById("id_remove_avatar");
+    var cropWrap = document.getElementById("avatar-crop-wrap");
+    var cropImage = document.getElementById("avatar-crop-image");
+    var cropX = document.getElementById("id_crop_x");
+    var cropY = document.getElementById("id_crop_y");
+    var cropW = document.getElementById("id_crop_w");
+    var cropH = document.getElementById("id_crop_h");
+    var cropper = null;
+
+    function clearCropValues() {
+      cropX.value = "";
+      cropY.value = "";
+      cropW.value = "";
+      cropH.value = "";
+    }
+
+    function destroyCropper() {
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    }
+
+    function initCropper(src) {
+      destroyCropper();
+      cropImage.src = src;
+      cropWrap.style.display = "block";
+
+      cropper = new Cropper(cropImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: "move",
+        autoCropArea: 1,
+        background: false,
+        responsive: true,
+        crop: function (event) {
+          var d = event.detail;
+          cropX.value = d.x;
+          cropY.value = d.y;
+          cropW.value = d.width;
+          cropH.value = d.height;
+        }
+      });
+    }
+
+    if (avatarInput) {
+      avatarInput.addEventListener("change", function () {
+        clearCropValues();
+        if (!avatarInput.files || !avatarInput.files.length) {
+          destroyCropper();
+          cropWrap.style.display = "none";
+          return;
+        }
+        var file = avatarInput.files[0];
+        var src = URL.createObjectURL(file);
+        initCropper(src);
+        if (removeCheckbox) {
+          removeCheckbox.checked = false;
+        }
+      });
+    }
+
+    if (removeCheckbox) {
+      removeCheckbox.addEventListener("change", function () {
+        if (!removeCheckbox.checked) return;
+        destroyCropper();
+        cropWrap.style.display = "none";
+        clearCropValues();
+        if (avatarInput) {
+          avatarInput.value = "";
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", function () {
+        if (!cropper) return;
+        var data = cropper.getData(true);
+        cropX.value = data.x;
+        cropY.value = data.y;
+        cropW.value = data.width;
+        cropH.value = data.height;
+      });
+    }
+  })();
+</script>
+{% endblock %}

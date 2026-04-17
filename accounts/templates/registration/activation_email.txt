@@ -1,0 +1,8 @@
+Hi {{ user.username }},
+
+Thanks for registering on {{ app_name }}.
+
+Please confirm your email by opening this link:
+{{ activation_link }}
+
+If you did not create this account, you can ignore this email.

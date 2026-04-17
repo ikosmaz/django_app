@@ -1,0 +1,10 @@
+Hi {{ user.username }},
+
+We received a request to delete your account on {{ app_name }}.
+
+To confirm permanent deletion, open this link and press the delete button:
+{{ delete_link }}
+
+If you did not request this, you can safely ignore this email.
+
+If you decide to come back later, welcome back by creating an account again.
