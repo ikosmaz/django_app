@@ -15,7 +15,31 @@ register = template.Library()
 
 @register.filter(name='gravatar')
 def gravatar(user, size=35):
-    email = str(user.email.strip().lower()).encode('utf-8')
+    try:
+        size = int(size)
+    except (TypeError, ValueError):
+        size = 35
+
+    email_value = ''
+    if user and hasattr(user, 'email') and user.email:
+        email_value = str(user.email).strip().lower()
+
+    email = email_value.encode('utf-8')
     email_hash = md5(email).hexdigest()
     url = "//www.gravatar.com/avatar/{0}?s={1}&d=identicon&r=PG"
     return url.format(email_hash, size)
+
+
+@register.filter(name='avatar_url')
+def avatar_url(user, size=35):
+    if user and getattr(user, 'is_authenticated', False):
+        profile = getattr(user, 'profile', None)
+        if profile is None:
+            try:
+                profile = user.profile
+            except Exception:
+                profile = None
+        if profile and profile.avatar:
+            return profile.avatar.url
+
+    return gravatar(user, size=size)

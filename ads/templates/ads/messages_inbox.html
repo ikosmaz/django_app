@@ -1,0 +1,658 @@
+{% extends "base_menu.html" %}
+{% load app_tags %}
+{% load static %}
+{% block content %}
+<style>
+.inbox-wrap {margin-top: 12px;}
+.inbox-ad {border: 1px solid #d9d9d9; border-radius: 8px; background: #fff; margin-bottom: 10px; overflow: visible;}
+.inbox-ad-btn {
+  width: 100%;
+  border: 0;
+  background: #eefaf9;
+  padding: 0 12px 0 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.inbox-ad-btn:hover, .inbox-ad-btn:focus {background: #dff4f2;}
+.inbox-ad-panel {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: height 0.22s ease, opacity 0.18s ease;
+}
+.inbox-ad.open .inbox-ad-panel {opacity: 1;}
+.inbox-ad.open .inbox-ad-chevron {transform: rotate(180deg);}
+.inbox-ad-chevron {transition: transform 0.2s ease; color: #6b7280; font-size: 12px;}
+.inbox-ad-head {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  min-height: 52px;
+}
+.inbox-ad-link {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  min-height: 52px;
+}
+.inbox-ad-cover {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px 0 0 8px;
+  border: 0;
+  flex: 0 0 52px;
+}
+.inbox-ad-title {
+  line-height: 20px;
+  max-height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.inbox-ad-title-mobile {display: none;}
+.inbox-owner-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: #009a90;
+  color: #fff;
+  font-size: 0.75em;
+  font-weight: 600;
+  vertical-align: middle;
+}
+@media (max-width: 767px) {
+  .inbox-ad-title-desktop {display: none;}
+  .inbox-ad-title-mobile {display: inline;}
+  .inbox-wrap {
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+  .inbox-wrap .panel-heading,
+  .inbox-wrap .panel-body {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .inbox-thread-body {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+.inbox-thread {border-top: 1px solid #ececec; overflow: visible;}
+.inbox-thread-btn {
+  width: 100%;
+  border: 0;
+  background: #fff;
+  padding: 8px 10px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+}
+.inbox-thread-btn:hover, .inbox-thread-btn:focus {background: #f8fbfc;}
+.inbox-thread.open .inbox-thread-chevron {transform: rotate(180deg);}
+.inbox-thread-chevron {transition: transform 0.2s ease; color: #6b7280; font-size: 12px;}
+.inbox-thread-head {display:flex; align-items:center; min-width: 0;}
+.inbox-avatar {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+  margin: 0; padding: 0; flex: 0 0 28px;
+}
+.inbox-thread-title {margin-left: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.inbox-thread-panel {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: height 0.22s ease, opacity 0.18s ease;
+}
+.inbox-thread.open .inbox-thread-panel {opacity: 1;}
+.inbox-thread-body {padding: 8px 10px 10px;}
+.inbox-message-item {display: flex; margin-bottom: 8px;}
+.inbox-message-item.from-owner {justify-content: flex-start;}
+.inbox-message-item.from-sender {justify-content: flex-end;}
+.inbox-message-bubble {
+  max-width: 86%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #dde3e9;
+  background: #f4f6f8;
+  color: #1f2933;
+  cursor: pointer;
+  position: relative;
+}
+.inbox-message-item.from-owner .inbox-message-bubble {
+  border-color: #9fd8d2;
+  background: #e8f7f5;
+  color: #006d66;
+}
+.inbox-message-bubble.has-inside-actions {padding-right: 30px;}
+.inbox-message-text {margin: 0; white-space: pre-wrap; word-break: break-word;}
+.inbox-message-meta {display: none; margin-top: 6px; font-size: 0.82em; color: #5f6b76;}
+.inbox-message-item.show-meta .inbox-message-meta {display:block;}
+.inbox-message-actions {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  z-index: 5000;
+}
+.inbox-message-actions-btn {
+  border: 0;
+  background: transparent;
+  color: #7a8793;
+  line-height: 1;
+  padding: 2px 4px;
+  list-style: none;
+  cursor: pointer;
+}
+.inbox-message-actions-btn::-webkit-details-marker {
+  display: none;
+}
+.inbox-message-actions-btn:hover,
+.inbox-message-actions-btn:focus {
+  color: #3f4b57;
+  outline: none;
+}
+.inbox-message-actions-menu {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 0;
+  min-width: 82px;
+  background: #fff;
+  border: 1px solid #d8dde3;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 5001;
+}
+.inbox-message-actions[open] .inbox-message-actions-menu {
+  display: block;
+}
+.inbox-message-actions.inbox-message-actions-open-right .inbox-message-actions-menu {
+  right: auto;
+  left: calc(100% + 8px);
+  top: 0;
+}
+.inbox-message-actions-menu a {
+  display: block;
+  padding: 7px 10px;
+  color: #2f3a45;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+.inbox-message-actions-item {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 7px 10px;
+  color: #2f3a45;
+  font-size: 0.9em;
+}
+.inbox-message-actions-menu a:hover,
+.inbox-message-actions-menu a:focus {
+  background: #eef3f7;
+  color: #1f2933;
+  text-decoration: none;
+}
+.inbox-message-actions-item:hover,
+.inbox-message-actions-item:focus {
+  background: #eef3f7;
+  color: #1f2933;
+  text-decoration: none;
+  outline: none;
+}
+.inbox-message-delete-confirm {
+  display: none;
+  padding: 7px 8px 8px;
+  border-top: 1px solid #eef1f4;
+}
+.inbox-message-actions.confirming .inbox-message-actions-main {
+  display: none;
+}
+.inbox-message-actions.confirming .inbox-message-delete-confirm {
+  display: block;
+}
+.inbox-message-delete-confirm-label {
+  font-size: 0.86em;
+  color: #4a5560;
+  margin-bottom: 6px;
+}
+.inbox-message-delete-confirm-buttons {
+  display: flex;
+  gap: 6px;
+}
+.inbox-message-delete-confirm-buttons .btn {
+  padding: 2px 8px;
+  font-size: 0.82em;
+}
+.inbox-message-form-wrap {position: relative; margin-bottom: 10px;}
+.inbox-message-input {width: 100%; padding-right: 44px; resize: vertical;}
+.inbox-send-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border: 0;
+  background: transparent;
+  color: #009a90;
+  font-size: 1.2em;
+  padding: 0;
+}
+.inbox-send-btn:hover {color:#006d66;}
+</style>
+
+<div class="panel panel-default inbox-wrap">
+  <div class="panel-heading">
+    <h3 class="panel-title">Messages</h3>
+  </div>
+  <div class="panel-body">
+    {% if ad_threads %}
+      {% for ad_group in ad_threads %}
+      <div class="inbox-ad js-inbox-ad" data-ad-id="{{ ad_group.ad.id }}">
+        <button type="button" class="inbox-ad-btn js-inbox-ad-btn" aria-expanded="false">
+          <span class="inbox-ad-head">
+            <a href="{% url 'ads:ad_detail' ad_group.ad.id %}#messages-panel"
+               class="inbox-ad-link"
+               onclick="event.stopPropagation();">
+              {% if ad_group.ad.thumbnail %}
+              <img class="inbox-ad-cover" src="{{ ad_group.ad.thumbnail.url }}" alt="{{ ad_group.ad.title }}">
+              {% elif ad_group.ad.picture %}
+              <img class="inbox-ad-cover" src="{{ ad_group.ad.picture.url }}" alt="{{ ad_group.ad.title }}">
+              {% else %}
+              <img class="inbox-ad-cover" src="{% static 'no_image.png' %}" alt="No image">
+              {% endif %}
+              <strong class="inbox-ad-title">
+                <span class="inbox-ad-title-desktop">{{ ad_group.ad.title|capfirst }}</span>
+                <span class="inbox-ad-title-mobile">
+                  {{ ad_group.ad.title|capfirst|slice:":28" }}{% if ad_group.ad.title|length > 28 %}...{% endif %}
+                </span>
+              </strong>
+            </a>
+                {% if ad_group.ad.owner_id == user.id %}
+                <span class="inbox-owner-badge">My ad</span>
+                {% endif %}
+            {% if ad_group.has_unread %}
+            <i class="fa fa-exclamation" style="margin-left:6px; color:#006d66;" title="Unread messages"></i>
+            {% endif %}
+          </span>
+          <span class="inbox-ad-chevron">▼</span>
+        </button>
+        <div class="inbox-ad-panel js-inbox-ad-panel">
+          {% for thread in ad_group.threads %}
+          <div class="inbox-thread js-inbox-thread" data-thread-key="{{ ad_group.ad.id }}-{{ thread.user.id }}">
+            <button type="button" class="inbox-thread-btn js-inbox-thread-btn" aria-expanded="false">
+              <span class="inbox-thread-head">
+                <img class="inbox-avatar" src="{{ thread.user|avatar_url:56 }}" alt="{{ thread.user.username }}">
+                <span class="inbox-thread-title">
+                  Messages with <strong>{{ thread.user.username }}</strong>
+                  {% if thread.has_unread %}
+                  <i class="fa fa-exclamation" style="margin-left:6px; color:#006d66;" title="Unread messages"></i>
+                  {% endif %}
+                </span>
+              </span>
+              <span class="inbox-thread-chevron">▼</span>
+            </button>
+            <div class="inbox-thread-panel js-inbox-thread-panel">
+              <div class="inbox-thread-body">
+                {% if user == ad_group.ad.owner and thread.reply_target_message_id %}
+                <form method="post" action="{% url 'ads:ad_message_reply' thread.reply_target_message_id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'ads:messages_inbox' %}">
+                  <div class="inbox-message-form-wrap">
+                    <textarea name="encrypted_text" rows="2" class="form-control inbox-message-input" required></textarea>
+                    <button type="submit" class="inbox-send-btn" title="Send reply" aria-label="Send reply">
+                      <i class="fa fa-paper-plane"></i>
+                    </button>
+                  </div>
+                </form>
+                {% elif user != ad_group.ad.owner %}
+                <form method="post" action="{% url 'ads:ad_message_create' ad_group.ad.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{% url 'ads:messages_inbox' %}">
+                  <div class="inbox-message-form-wrap">
+                    <textarea name="encrypted_text" rows="2" class="form-control inbox-message-input" required></textarea>
+                    <button type="submit" class="inbox-send-btn" title="Send message" aria-label="Send message">
+                      <i class="fa fa-paper-plane"></i>
+                    </button>
+                  </div>
+                </form>
+                {% endif %}
+
+                {% for message in thread.messages %}
+                <div class="inbox-message-item {% if message.sender == ad_group.ad.owner %}from-owner{% else %}from-sender{% endif %}">
+                  <div class="inbox-message-bubble js-inbox-message-toggle {% if message.sender == user %}has-inside-actions{% endif %}" role="button" tabindex="0" aria-expanded="false">
+                    {% if message.sender == user %}
+                    <details class="inbox-message-actions {% if ad_group.ad.owner_id == user.id %}inbox-message-actions-open-right{% endif %}">
+                      <summary class="inbox-message-actions-btn" aria-label="Message actions">
+                        <i class="fa fa-ellipsis-v"></i>
+                      </summary>
+                      <div class="inbox-message-actions-menu">
+                        <div class="inbox-message-actions-main">
+                          {% if not message.is_read %}
+                          <a href="{% url 'ads:ad_message_edit' message.id %}?next={% url 'ads:messages_inbox' %}">
+                            Edit
+                          </a>
+                          {% endif %}
+                          <button type="button"
+                                  class="inbox-message-actions-item js-inbox-message-delete-trigger">
+                            Delete
+                          </button>
+                        </div>
+                        <form method="post"
+                              action="{% url 'ads:ad_message_delete' message.id %}"
+                              class="inbox-message-delete-confirm">
+                          {% csrf_token %}
+                          <input type="hidden" name="next" value="{% url 'ads:messages_inbox' %}">
+                          <div class="inbox-message-delete-confirm-label">Delete?</div>
+                          <div class="inbox-message-delete-confirm-buttons">
+                            <button type="submit" class="btn btn-danger btn-xs">Yes</button>
+                            <button type="button" class="btn btn-default btn-xs js-inbox-message-delete-cancel">No</button>
+                          </div>
+                        </form>
+                      </div>
+                    </details>
+                    {% endif %}
+                    <p class="inbox-message-text">{{ message.text|capfirst }}</p>
+                    <small class="inbox-message-meta">
+                      <em>Sent by {% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %} on {{ message.created_at }}</em>
+                    </small>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:#777;">No messages yet...</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  (function () {
+    if (window.__inboxMessageMetaInitialized) return;
+    window.__inboxMessageMetaInitialized = true;
+    const STORAGE_KEY = 'messagesInboxState:v1';
+    const adItems = Array.from(document.querySelectorAll('.js-inbox-ad'));
+
+    function clearPanelTransition(panel) {
+      if (!panel || !panel._collapseEndHandler) return;
+      panel.removeEventListener('transitionend', panel._collapseEndHandler);
+      panel._collapseEndHandler = null;
+    }
+
+    function animatePanelOpen(panel, instant) {
+      if (!panel) return;
+      clearPanelTransition(panel);
+
+      if (instant) {
+        panel.style.height = 'auto';
+        panel.style.opacity = '1';
+        panel.style.overflow = 'visible';
+        return;
+      }
+
+      panel.style.overflow = 'hidden';
+      panel.style.height = panel.offsetHeight + 'px';
+      panel.style.opacity = '0';
+      panel.offsetHeight;
+      panel.style.height = panel.scrollHeight + 'px';
+      panel.style.opacity = '1';
+
+      const onEnd = function (e) {
+        if (e.propertyName !== 'height') return;
+        clearPanelTransition(panel);
+        panel.style.height = 'auto';
+        panel.style.overflow = 'visible';
+      };
+      panel._collapseEndHandler = onEnd;
+      panel.addEventListener('transitionend', onEnd);
+    }
+
+    function animatePanelClose(panel, instant) {
+      if (!panel) return;
+      clearPanelTransition(panel);
+
+      if (instant) {
+        panel.style.height = '0px';
+        panel.style.opacity = '0';
+        panel.style.overflow = 'hidden';
+        return;
+      }
+
+      panel.style.overflow = 'hidden';
+      panel.style.height = panel.scrollHeight + 'px';
+      panel.style.opacity = '1';
+      panel.offsetHeight;
+      panel.style.height = '0px';
+      panel.style.opacity = '0';
+
+      const onEnd = function (e) {
+        if (e.propertyName !== 'height') return;
+        clearPanelTransition(panel);
+      };
+      panel._collapseEndHandler = onEnd;
+      panel.addEventListener('transitionend', onEnd);
+    }
+
+    function saveInboxState() {
+      const openAds = Array.from(document.querySelectorAll('.inbox-ad.open'))
+        .map(function (el) { return el.dataset.adId; })
+        .filter(Boolean);
+      const openThreads = Array.from(document.querySelectorAll('.inbox-thread.open'))
+        .map(function (el) { return el.dataset.threadKey; })
+        .filter(Boolean);
+
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        openAds: openAds,
+        openThreads: openThreads
+      }));
+    }
+
+    function closeThread(threadItem, instant) {
+      const btn = threadItem.querySelector('.js-inbox-thread-btn');
+      const panel = threadItem.querySelector('.js-inbox-thread-panel');
+      if (!btn || !panel) return;
+      threadItem.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      animatePanelClose(panel, instant);
+    }
+
+    function openThread(threadItem, instant) {
+      const btn = threadItem.querySelector('.js-inbox-thread-btn');
+      const panel = threadItem.querySelector('.js-inbox-thread-panel');
+      if (!btn || !panel) return;
+      threadItem.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      animatePanelOpen(panel, instant);
+    }
+
+    function closeAd(adItem, instant) {
+      const btn = adItem.querySelector('.js-inbox-ad-btn');
+      const panel = adItem.querySelector('.js-inbox-ad-panel');
+      if (!btn || !panel) return;
+      adItem.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      adItem.querySelectorAll('.js-inbox-thread').forEach(function (threadItem) {
+        closeThread(threadItem, true);
+      });
+      animatePanelClose(panel, instant);
+    }
+
+    function openAd(adItem, instant) {
+      const btn = adItem.querySelector('.js-inbox-ad-btn');
+      const panel = adItem.querySelector('.js-inbox-ad-panel');
+      if (!btn || !panel) return;
+      adItem.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      animatePanelOpen(panel, instant);
+    }
+
+    function restoreInboxState() {
+      let raw = null;
+      try {
+        raw = sessionStorage.getItem(STORAGE_KEY);
+      } catch (err) {
+        return;
+      }
+      if (!raw) return;
+
+      let state = null;
+      try {
+        state = JSON.parse(raw);
+      } catch (err) {
+        return;
+      }
+      if (!state) return;
+
+      const openAds = Array.isArray(state.openAds) ? state.openAds : [];
+      const openThreads = Array.isArray(state.openThreads) ? state.openThreads : [];
+
+      openAds.forEach(function (adId) {
+        const ad = document.querySelector('.inbox-ad[data-ad-id="' + adId + '"]');
+        if (ad) openAd(ad, true);
+      });
+
+      openThreads.forEach(function (threadKey) {
+        const thread = document.querySelector('.inbox-thread[data-thread-key="' + threadKey + '"]');
+        if (!thread) return;
+        const parentAd = thread.closest('.inbox-ad');
+        if (parentAd && !parentAd.classList.contains('open')) {
+          openAd(parentAd, true);
+        }
+        openThread(thread, true);
+      });
+
+    }
+
+    adItems.forEach(function (adItem) {
+      const btn = adItem.querySelector('.js-inbox-ad-btn');
+      const panel = adItem.querySelector('.js-inbox-ad-panel');
+      if (!btn || !panel) return;
+      panel.style.height = '0px';
+      panel.style.opacity = '0';
+      panel.style.overflow = 'hidden';
+
+      btn.addEventListener('click', function () {
+        const isOpen = adItem.classList.contains('open');
+        adItems.forEach(function (other) {
+          if (other !== adItem) closeAd(other, false);
+        });
+        if (isOpen) closeAd(adItem, false);
+        else openAd(adItem, false);
+        saveInboxState();
+      });
+    });
+
+    document.querySelectorAll('.js-inbox-thread').forEach(function (threadItem) {
+      const btn = threadItem.querySelector('.js-inbox-thread-btn');
+      const panel = threadItem.querySelector('.js-inbox-thread-panel');
+      if (!btn || !panel) return;
+      panel.style.height = '0px';
+      panel.style.opacity = '0';
+      panel.style.overflow = 'hidden';
+
+      btn.addEventListener('click', function () {
+        const siblings = threadItem.parentElement.querySelectorAll('.js-inbox-thread');
+        const isOpen = threadItem.classList.contains('open');
+
+        siblings.forEach(function (other) {
+          if (other !== threadItem) closeThread(other, false);
+        });
+
+        if (isOpen) closeThread(threadItem, false);
+        else openThread(threadItem, false);
+        saveInboxState();
+      });
+    });
+
+    restoreInboxState();
+    saveInboxState();
+
+    document.querySelectorAll('form').forEach(function (formEl) {
+      formEl.addEventListener('submit', saveInboxState);
+    });
+
+    function closeInboxMessageActionsOnOutside(e) {
+      if (e.target.closest('.inbox-message-actions')) return;
+      document.querySelectorAll('.inbox-message-actions[open]').forEach(function (menu) {
+        menu.open = false;
+      });
+    }
+
+    document.addEventListener('click', closeInboxMessageActionsOnOutside);
+    document.addEventListener('touchstart', closeInboxMessageActionsOnOutside);
+    document.addEventListener('pointerdown', closeInboxMessageActionsOnOutside);
+
+    document.addEventListener('click', function (e) {
+      const deleteTrigger = e.target.closest('.js-inbox-message-delete-trigger');
+      if (deleteTrigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        const actions = deleteTrigger.closest('.inbox-message-actions');
+        if (!actions) return;
+        actions.classList.add('confirming');
+        actions.open = true;
+        return;
+      }
+
+      const deleteCancel = e.target.closest('.js-inbox-message-delete-cancel');
+      if (deleteCancel) {
+        e.preventDefault();
+        e.stopPropagation();
+        const actions = deleteCancel.closest('.inbox-message-actions');
+        if (!actions) return;
+        actions.classList.remove('confirming');
+        actions.open = true;
+      }
+    });
+
+    document.querySelectorAll('.inbox-message-actions').forEach(function (menu) {
+      menu.addEventListener('toggle', function () {
+        if (menu.open) {
+          document.querySelectorAll('.inbox-message-actions[open]').forEach(function (other) {
+            if (other !== menu) {
+              other.open = false;
+            }
+          });
+        }
+        if (!menu.open) {
+          menu.classList.remove('confirming');
+        }
+      });
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.inbox-message-actions')) return;
+      const bubble = e.target.closest('.js-inbox-message-toggle');
+      if (!bubble) return;
+      const item = bubble.closest('.inbox-message-item');
+      const isOpen = item.classList.toggle('show-meta');
+      bubble.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (!e.target.classList.contains('js-inbox-message-toggle')) return;
+      e.preventDefault();
+      const item = e.target.closest('.inbox-message-item');
+      const isOpen = item.classList.toggle('show-meta');
+      e.target.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ads.models import Ad, CommentFav, Fav, Message, Category
+from ads.models import Ad, CommentFav, Fav, Message, Category, UserProfile
 
 # Register your models here.
 
@@ -13,6 +13,7 @@ admin.site.register(Fav)
 
 admin.site.register(CommentFav)
 admin.site.register(Message)
+admin.site.register(UserProfile)
 
 
 @admin.register(Category)

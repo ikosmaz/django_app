@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 {% load static %}
+{% load app_tags %}
 
 {% block head %}
 <style>
@@ -14,43 +15,154 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
+  z-index: 1050;
   display: none;
+  align-items: center;
+  justify-content: center;
   background-color: rgba(0, 0, 0, 0.9);
+}
+
+.overlay-image-wrap {
+    position: relative;
+    width: min(96vw, 1200px);
+    height: min(92vh, 900px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-slider {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: pan-y;
+    cursor: grab;
+}
+
+.overlay-slider.is-grabbing {
+    cursor: grabbing;
+}
+
+.overlay-track {
+    height: 100%;
+    display: flex;
+    transform: translate3d(-100%, 0, 0);
+    will-change: transform;
+}
+
+.overlay-slide {
+    flex: 0 0 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 12px;
+    border: 2px solid #d9d9d9;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.overlay-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    border: 0;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    line-height: 1;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    z-index: 4;
+}
+
+.overlay-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 28px;
+    line-height: 1;
+    z-index: 4;
+}
+
+.overlay-nav-prev { left: 10px; }
+.overlay-nav-next { right: 10px; }
+
+.overlay-counter {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 12px;
+    z-index: 4;
 }
 
 .added_by {color: #c93a0d;}
 .panel-title {font-weight: bold;}
 
-/* Base styling for both images */
-#img1, #img2 {border-radius: 15px; object-fit: contain;}
+/* Base styling for detail images */
+#img2 {border-radius: 15px; object-fit: contain;}
 
 /* Desktop / Large screen */
-#img1 {border: 2px solid #d9d9d9; margin-top: 70px; max-height: 90vh;}
-
 #img2 {max-width: 40%; max-height: 30vh; margin-top: 10px; margin-bottom: 10px;}
-
-/* Landscape override for img1 (added via JS) */
-#img1.landscape {max-width: 90%; max-height: auto;}
 
 .panel-heading {display: flex; align-items: center;min-height:40px;}
 .panel-heading-msg {display: flex; align-items: center;height:35px;background:var(--surface-soft); cursor:pointer;}
+.ad-detail-columns {margin-left: -8px; margin-right: -8px; position: relative;}
+.ad-detail-columns > [class*="col-"] {padding-left: 8px; padding-right: 8px;}
 .panel-body {
-    border: 1px solid #ccc;   /* change color as desired */
-    border-radius: 6px;       /* optional: rounded corners */
     background: #fff;         /* keeps card clean against gray background */
-    margin-top: 8px;
-    margin-bottom: 20px;
-    margin-left:-13px;
-    margin-right:-15px;
+    margin-top: 0;
+    margin-bottom: 8px;
+    margin-left: 0;
+    margin-right: 0;
 }
+
+@media (min-width: 992px) {
+    .ad-detail-columns::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-0.5px);
+        top: 8px;
+        bottom: 20px;
+        width: 1px;
+        background: #ccc;
+    }
+}
+
+@media (max-width: 991px) {
+    .ad-detail-columns > [class*="col-"]:first-child .panel-body {
+        border-bottom: 1px solid #ccc;
+    }
+}
+
 /* Mobile */
 @media screen and (max-width: 780px) {
 
-    #img1 {max-width: 96%; max-height: 90vh; border: 2px solid #d9d9d9;}
+    .overlay-image {max-width: 96%; max-height: 90vh; border: 2px solid #d9d9d9;}
 
     #img2 {max-width: 80%; max-height: 30vh; margin-top: 15px; margin-bottom: 10px;}
-    .col-body {padding-left:0px; padding-right:0;} !importent
+    .col-body {padding-left:0 !important; padding-right:0 !important;}
+    .ad-detail-columns {margin-left: 0; margin-right: 0;}
+    .ad-detail-columns > [class*="col-"] {padding-left: 0; padding-right: 0;}
 
 }
 
@@ -60,8 +172,88 @@
 .icon-group a:hover {color: #006d66;}
 .fa {color: #009a90;}
 .fa-thumbs-up, .fa-thumbs-o-up, .fa-trash {margin-bottom:10px;}
-.section-toggle {margin-bottom: 12px;}
+.section-toggle {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
 .message-row {margin-left: -15px; margin-right:-15px; margin-bottom: 8px;}
+.message-thread-accordion {
+    overflow: visible;
+}
+.message-accordion-btn {
+    width: 100%;
+    border: 0;
+    background: var(--surface-soft);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+    font-weight: 600;
+}
+.message-accordion-btn:hover,
+.message-accordion-btn:focus {
+    background: #d9f2ef;
+}
+.message-accordion-label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+.message-thread-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    flex: 0 0 28px;
+}
+.avatar-overlay-image-wrap {
+    position: relative;
+    width: min(92vw, 620px);
+    height: min(88vh, 620px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.avatar-overlay-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 12px;
+    border: 2px solid #d9d9d9;
+    object-fit: contain;
+}
+.message-accordion-text {
+    margin: 0 0 0 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.message-accordion-chevron {
+    font-size: 12px;
+    color: #5f6b76;
+    transition: transform 0.2s ease;
+}
+.message-thread-accordion.open .message-accordion-chevron {
+    transform: rotate(180deg);
+}
+.message-accordion-panel {
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: height 0.22s ease, opacity 0.18s ease;
+}
+.message-thread-accordion.open .message-accordion-panel {
+    opacity: 1;
+}
 .comment-row {margin-left: 0;margin-right:0;}
 .owner-reply {margin-left: 30px;color:#009a90;}
 .message-form-wrap {position: relative; margin-top: -4px;}
@@ -89,7 +281,8 @@
 }
 .message-send-btn:hover {color: #006d66;}
 
-.btn-group .btn {
+.btn-group .btn,
+.section-toggle .btn {
     display: inline-flex;
     align-items: center;      /* vertical centering */
     gap: 6px;                 /* space between icon / text / badge */
@@ -97,6 +290,181 @@
     line-height: 1;           /* prevent text stretching */
     padding-top: 0;
     padding-bottom: 0;
+}
+
+#messages-tab {
+    margin-left: auto;
+}
+
+/* Message panel and thread layout */
+#messages-panel {
+    text-align: left;
+}
+#messages-panel .message-row {
+    margin-left: 0;
+    margin-right: 0;
+}
+#messages-panel .panel-body-msg {
+    margin-left: 10px;
+    margin-right: 15px;
+    text-align: left;
+}
+#messages-panel form,
+#messages-panel .message-form-wrap {
+    text-align: left;
+}
+#messages-panel textarea {
+    text-align: left;
+    direction: ltr;
+}
+.message-item {
+    display: flex;
+    margin-bottom: 10px;
+    position: relative;
+}
+.message-item.from-owner {
+    justify-content: flex-start;
+}
+.message-item.from-sender {
+    justify-content: flex-end;
+}
+.message-bubble {
+    max-width: 86%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid #dde3e9;
+    background: #f4f6f8;
+    color: #1f2933;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+}
+.message-item.from-owner .message-bubble {
+    border-color: #9fd8d2;
+    background: #e8f7f5;
+    color: #006d66;
+}
+.message-bubble.has-inside-actions {
+    padding-right: 30px;
+}
+.message-text {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.message-meta {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.8em;
+    color: #5f6b76;
+}
+.message-item.from-owner .message-meta {
+    color: #00756f;
+}
+.message-item.show-meta .message-meta {
+    display: block;
+}
+.message-bubble:focus {
+    outline: 2px solid #009a90;
+    outline-offset: 1px;
+}
+.message-actions {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    z-index: 5000;
+}
+.message-actions-btn {
+    border: 0;
+    background: transparent;
+    color: #7a8793;
+    line-height: 1;
+    padding: 2px 4px;
+    list-style: none;
+    cursor: pointer;
+}
+.message-actions-btn::-webkit-details-marker {
+    display: none;
+}
+.message-actions-btn:hover,
+.message-actions-btn:focus {
+    color: #3f4b57;
+    outline: none;
+}
+.message-actions-menu {
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 0;
+    min-width: 82px;
+    background: #fff;
+    border: 1px solid #d8dde3;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    z-index: 5001;
+}
+.message-actions[open] .message-actions-menu {
+    display: block;
+}
+.message-actions.message-actions-open-right .message-actions-menu {
+    right: auto;
+    left: calc(100% + 8px);
+    top: 0;
+}
+.message-actions-menu a {
+    display: block;
+    padding: 7px 10px;
+    color: #2f3a45;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+.message-actions-item {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 7px 10px;
+    color: #2f3a45;
+    font-size: 0.9em;
+}
+.message-actions-menu a:hover,
+.message-actions-menu a:focus {
+    background: #eef3f7;
+    color: #1f2933;
+    text-decoration: none;
+}
+.message-actions-item:hover,
+.message-actions-item:focus {
+    background: #eef3f7;
+    color: #1f2933;
+    text-decoration: none;
+    outline: none;
+}
+.message-delete-confirm {
+    display: none;
+    padding: 7px 8px 8px;
+    border-top: 1px solid #eef1f4;
+}
+.message-actions.confirming .message-actions-main {
+    display: none;
+}
+.message-actions.confirming .message-delete-confirm {
+    display: block;
+}
+.message-delete-confirm-label {
+    font-size: 0.86em;
+    color: #4a5560;
+    margin-bottom: 6px;
+}
+.message-delete-confirm-buttons {
+    display: flex;
+    gap: 6px;
+}
+.message-delete-confirm-buttons .btn {
+    padding: 2px 8px;
+    font-size: 0.82em;
 }
 
 hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
@@ -113,7 +481,7 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
 }
 
 .commented_by {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     line-height: 1.1;
     font-size: 0.85em;
     color: #c93a0d;
@@ -132,6 +500,202 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
   display: none;
 }
 
+.other_ads-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 12px 12px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.other_ads-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.other_ads-container::-webkit-scrollbar-thumb {
+    background: #c9ced3;
+    border-radius: 8px;
+}
+
+.other_ad-card {
+    flex: 0 0 280px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.other_ad-link {
+    display: flex;
+    flex: 0 0 90px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.other_ad-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0;
+    border: 0;
+    border-right: 1px solid #e1e1e1;
+    display: block;
+}
+
+.other_ad-content {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: 10px;
+}
+
+.other_ad-rating {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.other_ad-rating-star {
+    color: #ffd84d;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.ad-main-image-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.ad-main-image-wrap #img2 {
+    margin-top: 0;
+    margin-bottom: 0;
+    display: block;
+}
+
+.detail-photo-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 10px;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.detail-photo-thumb {
+    max-height: 200px;
+    width: auto;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    cursor: pointer;
+    display: block;
+}
+
+.detail-photo-thumb.active {
+    border-color: #009a90;
+    box-shadow: 0 0 0 1px #009a90 inset;
+}
+
+.detail-rate-wrap {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.detail-rate-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #d9d9d9;
+    background: #f7f7f7;
+}
+
+.detail-rate-star {
+    font-size: 18px;
+    color: #c8c8c8 !important;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.detail-rate-star:hover,
+.detail-rate-star.hovered,
+.detail-rate-star.active {
+    color: #f5c518 !important;
+}
+
+.detail-avg-rating {
+    font-size: 0.95em;
+    color: #333;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.detail-avg-rating .fa-star {
+    color: #f5c518 !important;
+    padding-top: 0;
+}
+
+.other_ad-title {
+    margin: 0 0 4px;
+    font-size: 1.05em;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.other_ad-title a {
+    color: #222;
+    text-decoration: none;
+}
+
+.other_ad-title a:hover {
+    color: #006d66;
+}
+
+.other_ad-detail {
+    margin: 0 0 6px;
+    color: #555;
+    line-height: 1.25;
+}
+
+.other_ad-meta {
+    margin: 0;
+    margin-top: 2px;
+    font-size: 0.95em;
+    color: #333;
+    line-height: 1.3;
+}
+
+@media screen and (max-width: 780px) {
+    .other_ad-card {
+        flex: 0 0 290px;
+    }
+}
 
 </style>
 
@@ -142,9 +706,10 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
 <div class="col-body col-xs-12 col-sm-12 col-md-12">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h2 class="panel-title">{{ ad.title }}</h2>
+      <h2 class="panel-title">{{ ad.title|capfirst }}</h2>
     </div>
 
+    <div class="row ad-detail-columns">
     <div class="col-xs-12 col-sm-12 col-md-6">
     <div class="panel-body">
     <p class="price-row">
@@ -173,53 +738,118 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
     <p class="ad-city">
         <i class="fa fa-map-marker"></i>
         {% if ad.city == None %}
-        <a href="https://www.google.com/maps?q=Norway" target="_blank" title="View {{ ad.city }} on Goole Maps">
+        <a href="https://www.google.com/maps?q=Norway" target="_blank" title="View {{ ad.city|capfirst }} on Goole Maps">
             {{ ad.city }}
         </a>
         {% else %}
-        <a href="https://www.google.com/maps?q={{ ad.city | urlencode }},Norway" target="_blank" title="View {{ ad.city }} on Goole Maps">
-            {{ ad.city }}
+        <a href="https://www.google.com/maps?q={{ ad.city | urlencode }},Norway" target="_blank" title="View {{ ad.city|capfirst }} on Goole Maps">
+            {{ ad.city|capfirst }}
         </a>
         {% endif %}
     </p>
     </div>
 
-      <p style="font-size:110%;">Detail: {{ ad.text }}</p>
+      <p style="font-size:110%;">Detail: {{ ad.text|capfirst }}</p>
       <span class="added_by"><em>(Added by {{ ad.owner }} on {{ ad.updated_at }})</em></span>
         {% if ad.owner == user %}
-        <p style="text-align: right; margin-top:10px;">Edit or delete the ad &nbsp;
-            <a title="Edit" href="{% url 'ads:ad_update' ad.id %}"><i class="fa fa-pencil"></i></a> &nbsp;|&nbsp;
-            <a title="Delete" href="{% url 'ads:ad_delete' ad.id %}"><i class="fa fa-trash"></i></a>
+        <p style="text-align: right; margin-top:10px;">
+            <a class ="btn btn-default" title="Edit" href="{% url 'ads:ad_update' ad.id %}">Edit ad &nbsp;<i class="fa fa-pencil"></i></a>
         </p>
         {% endif %}
 
-      {% if ad.picture %}
-      <div id="overlay" class="overlay" style="text-align: center;"
-           onclick="document.getElementById('overlay').style.display='none';">
-        <img id="img1" src="{{ ad.picture.url }}" alt="">
+      {% if ad_photos %}
+      <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="overlay-image-wrap">
+          <button type="button" id="overlay-close" class="overlay-close" aria-label="Close image viewer">&times;</button>
+          <button type="button" id="overlay-prev" class="overlay-nav overlay-nav-prev" aria-label="Previous image">&#8249;</button>
+          <div id="overlay-slider" class="overlay-slider">
+            <div id="overlay-track" class="overlay-track">
+              <div class="overlay-slide"><img id="img-prev" class="overlay-image" src="{{ ad_photos.0.image.url }}" alt=""></div>
+              <div class="overlay-slide"><img id="img1" class="overlay-image" src="{{ ad_photos.0.image.url }}" alt=""></div>
+              <div class="overlay-slide"><img id="img-next" class="overlay-image" src="{{ ad_photos.0.image.url }}" alt=""></div>
+            </div>
+          </div>
+          <button type="button" id="overlay-next" class="overlay-nav overlay-nav-next" aria-label="Next image">&#8250;</button>
+          <div id="overlay-counter" class="overlay-counter"></div>
+        </div>
       </div>
       <div style="margin-top:10px;">
-        <img id="img2" src="{{ ad.picture.url }}" alt=""
-             onclick="document.getElementById('overlay').style.display='block';">
+        <div class="detail-photo-strip">
+            {% for photo in ad_photos %}
+            <img src="{{ photo.image.url }}"
+                 class="detail-photo-thumb js-detail-open {% if forloop.first %}active{% endif %}"
+                 data-index="{{ forloop.counter0 }}"
+                 alt="Ad photo {{ forloop.counter }}">
+            {% endfor %}
+        </div>
+      </div>
+      {% elif ad.picture %}
+      <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="overlay-image-wrap">
+          <button type="button" id="overlay-close" class="overlay-close" aria-label="Close image viewer">&times;</button>
+          <button type="button" id="overlay-prev" class="overlay-nav overlay-nav-prev" aria-label="Previous image">&#8249;</button>
+          <div id="overlay-slider" class="overlay-slider">
+            <div id="overlay-track" class="overlay-track">
+              <div class="overlay-slide"><img id="img-prev" class="overlay-image" src="{{ ad.picture.url }}" alt=""></div>
+              <div class="overlay-slide"><img id="img1" class="overlay-image" src="{{ ad.picture.url }}" alt=""></div>
+              <div class="overlay-slide"><img id="img-next" class="overlay-image" src="{{ ad.picture.url }}" alt=""></div>
+            </div>
+          </div>
+          <button type="button" id="overlay-next" class="overlay-nav overlay-nav-next" aria-label="Next image">&#8250;</button>
+          <div id="overlay-counter" class="overlay-counter"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="ad-main-image-wrap">
+            <img id="img2" class="js-detail-open" src="{{ ad.picture.url }}" alt="" data-index="0" style="cursor: zoom-in;">
+        </div>
       </div>
       {% else %}
-        <div id="overlay" class="overlay" style="text-align: center;"
-         onclick="document.getElementById('overlay').style.display='none';">
-        <img id="img1" src="{% static 'no_image.png' %}" alt="">
+      <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="overlay-image-wrap">
+          <button type="button" id="overlay-close" class="overlay-close" aria-label="Close image viewer">&times;</button>
+          <button type="button" id="overlay-prev" class="overlay-nav overlay-nav-prev" aria-label="Previous image">&#8249;</button>
+          <div id="overlay-slider" class="overlay-slider">
+            <div id="overlay-track" class="overlay-track">
+              <div class="overlay-slide"><img id="img-prev" class="overlay-image" src="{% static 'no_image.png' %}" alt=""></div>
+              <div class="overlay-slide"><img id="img1" class="overlay-image" src="{% static 'no_image.png' %}" alt=""></div>
+              <div class="overlay-slide"><img id="img-next" class="overlay-image" src="{% static 'no_image.png' %}" alt=""></div>
+            </div>
+          </div>
+          <button type="button" id="overlay-next" class="overlay-nav overlay-nav-next" aria-label="Next image">&#8250;</button>
+          <div id="overlay-counter" class="overlay-counter"></div>
         </div>
-
-        <div style="margin-top:10px;">
-        <img id="img2" src="{% static 'no_image.png' %}" alt=""
-             onclick="document.getElementById('overlay').style.display='block';">
+      </div>
+      <div style="margin-top:10px;">
+        <div class="ad-main-image-wrap">
+            <img id="img2" class="js-detail-open" src="{% static 'no_image.png' %}" alt="" data-index="0" style="cursor: zoom-in;">
         </div>
+      </div>
       {% endif %}
+
+      <div class="detail-rate-wrap">
+        {% if user.is_authenticated and user != ad.owner %}
+        <div class="detail-rate-stars" data-ad="{{ ad.id }}">
+            {% for i in "12345" %}
+            <i class="fa {% if ad_user_rating and forloop.counter <= ad_user_rating %}fa-star active{% else %}fa-star-o{% endif %} detail-rate-star"
+               data-value="{{ forloop.counter }}"
+               data-ad="{{ ad.id }}"></i>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="detail-avg-rating" id="detail-avg-stars-{{ ad.id }}">
+            <i class="fa fa-star"></i>
+            {{ ad.average_rating_db|default:ad.average_rating|floatformat:1 }} ({{ ad.total_ratings_db|default:ad.total_ratings }} ratings)
+        </div>
+      </div>
     </div>
     </div>
 
     <div class="col-xs-12 col-sm-12 col-md-6">
     <div class="panel-body">
-      <div class="btn-group section-toggle" role="group">
-        <button type="button" class="btn btn-default active" id="comments-tab" onclick="toggleSection('comments')" style="margin-right:8px;">
+      <div class="section-toggle" role="group">
+        <button type="button" class="btn btn-default active" id="comments-tab" onclick="toggleSection('comments')">
           Comments
         </button>
         <button type="button" class="btn btn-default" id="messages-tab" onclick="toggleSection('messages')">
@@ -265,7 +895,7 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
         <div class="panel-body-msg">
 
         <p class="comment-text">
-            {{ comment.text }}
+            {{ comment.text|capfirst }}
         </p>
 
         <div class="comment-footer">
@@ -313,40 +943,48 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
           <p style="color:#777777;">Reply to incoming questions below.</p>
           {% endif %}
 
+          {% if user != ad.owner %}
+          <form method="post" action="{% url 'ads:ad_message_create' ad.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'ads:ad_detail' ad.id %}#messages-panel">
+            <div class="message-form-wrap" style="margin-bottom:10px;">
+              {{ message_form.encrypted_text }}
+              <button type="submit" class="message-send-btn" title="Send message" aria-label="Send message">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </div>
+          </form>
+          {% endif %}
+
           {% if message_threads %}
             {% for thread in message_threads %}
-            <div class="panel panel-default message-row">
-                <div class="panel-heading-msg  message-toggle">
-                    <p style="margin-left:10px;margin-bottom:0;">Messages with <strong>{{ thread.user.username }}</strong>
-                    <span class="toggle-icon">▼</span>
+            <div class="panel panel-default message-row message-thread-accordion"
+                 data-thread-key="{{ ad.id }}-{{ thread.user.id }}">
+              <button type="button" class="message-accordion-btn" aria-expanded="false">
+                <span class="message-accordion-label">
+                  <img class="message-thread-avatar js-avatar-open"
+                       src="{{ thread.user|avatar_url:56 }}"
+                       data-avatar-src="{{ thread.user|avatar_url:400 }}"
+                       alt="{{ thread.user.username }}">
+                  <span class="message-accordion-text">
+                    Messages with <strong>{{ thread.user.username }}</strong>
                     {% for message in thread.messages %}
-                    {% if not message.is_read and message.sender != user%}
-                        <i class="fa fa-exclamation" style="margin-left:6px; color:#006d66;" title="Unread messages"></i>
+                    {% if not message.is_read and message.sender != user %}
+                    <i class="fa fa-exclamation" style="color:#006d66;" title="Unread messages"></i>
                     {% endif %}
                     {% endfor %}
-                    </p>
-                </div>
-
-              <div class="panel-body-msg hidden-section">
-                {% for message in thread.messages %}
-
-                <div class="{% if message.sender == ad.owner and message.parent_id %}owner-reply{% endif %}" style="margin-bottom:10px;">
-                  <p style="margin-bottom:4px;">➡ {{ message.text }}</p>
-                  <small class="text-muted commented_by">
-                    <em>Sent by
-                    {% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %} on {{ message.created_at }}</em>
-                  </small>
-
-                  {% if user == ad.owner and message.sender != user %}
-                  <div style="margin-top:8px;">
-                    <a href="#" onclick="toggleReplyForm({{ message.id }}); return false;">Reply</a>
-                  </div>
-                  <form id="reply-form-{{ message.id }}"
-                        action="{% url 'ads:ad_message_reply' message.id %}"
+                  </span>
+                </span>
+                <span class="message-accordion-chevron">▼</span>
+              </button>
+              <div class="message-accordion-panel">
+                <div class="panel-body-msg">
+                  {% if user == ad.owner and thread.reply_target_message_id %}
+                  <form action="{% url 'ads:ad_message_reply' thread.reply_target_message_id %}"
                         method="post"
-                        class="hidden-section"
-                        style="margin-top:8px;">
+                        style="margin-top:6px; margin-bottom:10px;">
                     {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'ads:ad_detail' ad.id %}#messages-panel">
                     <div class="message-form-wrap">
                       <textarea name="encrypted_text" rows="2" class="form-control message-input" required></textarea>
                       <button type="submit" class="message-send-btn" title="Send" aria-label="Send reply">
@@ -356,40 +994,181 @@ hr {margin-top:-15px; margin-bottom:0; border-top:1px solid #d9d9d9;}
                   </form>
                   {% endif %}
 
+                  {% for message in thread.messages %}
+                  <div class="message-item {% if message.sender == ad.owner %}from-owner{% else %}from-sender{% endif %}">
+                    <div class="message-bubble js-message-toggle {% if message.sender == user %}has-inside-actions{% endif %}" role="button" tabindex="0" aria-expanded="false">
+                      {% if message.sender == user %}
+                      <details class="message-actions {% if ad.owner_id == user.id %}message-actions-open-right{% endif %}">
+                        <summary class="message-actions-btn" aria-label="Message actions">
+                          <i class="fa fa-ellipsis-v"></i>
+                        </summary>
+                        <div class="message-actions-menu">
+                          <div class="message-actions-main">
+                            {% if not message.is_read %}
+                            <a href="{% url 'ads:ad_message_edit' message.id %}">
+                              Edit
+                            </a>
+                            {% endif %}
+                            <button type="button"
+                                    class="message-actions-item js-message-delete-trigger">
+                              Delete
+                            </button>
+                          </div>
+                          <form method="post"
+                                action="{% url 'ads:ad_message_delete' message.id %}"
+                                class="message-delete-confirm">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'ads:ad_detail' ad.id %}#messages-panel">
+                            <div class="message-delete-confirm-label">Delete?</div>
+                            <div class="message-delete-confirm-buttons">
+                              <button type="submit" class="btn btn-danger btn-xs">Yes</button>
+                              <button type="button" class="btn btn-default btn-xs js-message-delete-cancel">No</button>
+                            </div>
+                          </form>
+                        </div>
+                      </details>
+                      {% endif %}
+                      <p class="message-text">{{ message.text|capfirst }}</p>
+                      <small class="message-meta">
+                        <em>Sent by {% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %} on {{ message.created_at }}</em>
+                      </small>
+                    </div>
+                  </div>
+                  {% endfor %}
                 </div>
-                {% if not forloop.last %}
-                <hr style="margin-bottom:2px; margin-top:-10px;">
-                {% endif %}
-                {% endfor %}
               </div>
             </div>
             {% endfor %}
           {% else %}
           <p style="color:#777777;">No messages yet...</p>
           {% endif %}
-
-          {% if user != ad.owner %}
-          <form method="post" action="{% url 'ads:ad_message_create' ad.id %}">
-            {% csrf_token %}
-            <div class="message-form-wrap">
-              {{ message_form.encrypted_text }}
-              <button type="submit" class="message-send-btn" title="Send message" aria-label="Send message">
-                <i class="fa fa-paper-plane"></i>
-              </button>
-            </div>
-          </form>
-          {% endif %}
         {% else %}
         <p><a href="{% url 'login' %}?next={% url 'ads:all' %}" >Log in</a> to view and send messages.</p>
         {% endif %}
       </div>
+      <div id="avatar-overlay" class="overlay" aria-hidden="true">
+        <div class="avatar-overlay-image-wrap">
+          <button type="button" id="avatar-overlay-close" class="overlay-close" aria-label="Close avatar preview">&times;</button>
+          <img id="avatar-overlay-image" class="avatar-overlay-image" src="" alt="Avatar preview">
+        </div>
+      </div>
 
     </div>
     </div>
-
+    </div>
   </div>
 </div>
 
+    <div class="col-body col-xs-12 col-sm-12 col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">{% if user != ad.owner %} {{ ad.owner }}'s {% else %} Your {% endif %} other ads</h2>
+        </div>
+            <div class="other_ads-container">
+                {% for other_ad in other_ads %}
+                    <div class="other_ad-card">
+                        {% if other_ad.picture %}
+                            <a href="{% url 'ads:ad_detail' other_ad.id %}" class="other_ad-link">
+                                {% with rating=other_ad.average_rating_db|default:other_ad.average_rating %}
+                                    {% if rating > 0 %}
+                                        <span class="other_ad-rating">
+                                            <span class="other_ad-rating-star">★</span>
+                                            {{ rating|floatformat:1 }}
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                                <img src="{{ other_ad.picture.url }}" alt="{{ other_ad.title }}" class="other_ad-img">
+                            </a>
+                        {% else %}
+                            <a href="{% url 'ads:ad_detail' other_ad.id %}" class="other_ad-link">
+                                {% with rating=other_ad.average_rating_db|default:other_ad.average_rating %}
+                                    {% if rating > 0 %}
+                                        <span class="other_ad-rating">
+                                            <span class="other_ad-rating-star">★</span>
+                                            {{ rating|floatformat:1 }}
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                                <img src="{% static 'no_image.png' %}" alt="{{ other_ad.title }}" class="other_ad-img">
+                            </a>
+                        {% endif %}
+
+                        <div class="other_ad-content">
+                            <h4 class="other_ad-title">
+                                <a href="{% url 'ads:ad_detail' other_ad.id %}">
+                                    {{ other_ad.title|capfirst|slice:"0:20" }}{% if other_ad.title|length > 20 %}...{% endif %}
+                                </a>
+                            </h4>
+                            <p class="other_ad-detail" title="{{ other_ad.text|capfirst}}">
+                                {{ other_ad.text|capfirst|slice:"0:25" }}{% if other_ad.text|length > 25 %}...{% endif %}
+                            </p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-tags" style="color: #8A2BE2;"></i> </strong> {{ other_ad.price }} NOK</p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-list-ul" style="color: #00ced1;"></i> </strong> {{ other_ad.category.name }}</p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-map-marker-alt" style="color: #009C4A;"></i> </strong> {{ other_ad.city|capfirst }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color:#777777; margin: 10px 12px;">No other ads yet.</p>
+                {% endfor %}
+            </div>
+
+      </div>
+    </div>
+    <div class="col-body col-xs-12 col-sm-12 col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Ads you can be interested in</h2>
+        </div>
+            <div class="other_ads-container">
+                {% for interested_ad in interested_ads %}
+                    <div class="other_ad-card">
+                        {% if interested_ad.picture %}
+                            <a href="{% url 'ads:ad_detail' interested_ad.id %}" class="other_ad-link">
+                                {% with rating=interested_ad.average_rating_db|default:interested_ad.average_rating %}
+                                    {% if rating > 0 %}
+                                        <span class="other_ad-rating">
+                                            <span class="other_ad-rating-star">★</span>
+                                            {{ rating|floatformat:1 }}
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                                <img src="{{ interested_ad.picture.url }}" alt="{{ interested_ad.title }}" class="other_ad-img">
+                            </a>
+                        {% else %}
+                            <a href="{% url 'ads:ad_detail' interested_ad.id %}" class="other_ad-link">
+                                {% with rating=interested_ad.average_rating_db|default:interested_ad.average_rating %}
+                                    {% if rating > 0 %}
+                                        <span class="other_ad-rating">
+                                            <span class="other_ad-rating-star">★</span>
+                                            {{ rating|floatformat:1 }}
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                                <img src="{% static 'no_image.png' %}" alt="{{ interested_ad.title }}" class="other_ad-img">
+                            </a>
+                        {% endif %}
+
+                        <div class="other_ad-content">
+                            <h4 class="other_ad-title">
+                                <a href="{% url 'ads:ad_detail' interested_ad.id %}">
+                                    {{ interested_ad.title|capfirst|slice:"0:20" }}{% if interested_ad.title|length > 20 %}...{% endif %}
+                                </a>
+                            </h4>
+                            <p class="other_ad-detail" title="{{ interested_ad.text|capfirst}}">
+                                {{ interested_ad.text|capfirst|slice:"0:25" }}{% if interested_ad.text|length > 25 %}...{% endif %}
+                            </p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-tags" style="color: #8A2BE2;"></i> </strong> {{ interested_ad.price }} NOK</p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-list-ul" style="color: #00ced1;"></i> </strong> {{ interested_ad.category.name }}</p>
+                            <p class="other_ad-meta"><strong><i class="fas fa-map-marker-alt" style="color: #009C4A;"></i> </strong> {{ interested_ad.city|capfirst }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color:#777777; margin: 10px 12px;">No other ads yet.</p>
+                {% endfor %}
+            </div>
+
+      </div>
+    </div>
 <script>
 function likePost(url, kind, id) {
     $.post(url, {}, function() {
@@ -400,7 +1179,18 @@ function likePost(url, kind, id) {
     });
 }
 
-function toggleSection(section) {
+function rateAdDetail(ad_id, stars) {
+    fetch(`/ad/${ad_id}/rate/${stars}/`, { credentials: 'same-origin' })
+        .then(response => response.json())
+        .then(data => {
+            var avgEl = document.getElementById("detail-avg-stars-" + ad_id);
+            if (avgEl) {
+                avgEl.innerHTML = `<i class="fa fa-star"></i> ${data.average.toFixed(1)} (${data.total} ratings)`;
+            }
+        });
+}
+
+function toggleSection(section, updateHash = true) {
     var commentsPanel = document.getElementById('comments-panel');
     var messagesPanel = document.getElementById('messages-panel');
     var commentsTab = document.getElementById('comments-tab');
@@ -411,26 +1201,25 @@ function toggleSection(section) {
         messagesPanel.classList.remove('hidden-section');
         commentsTab.classList.remove('active');
         messagesTab.classList.add('active');
-        window.location.hash = 'messages-panel';
+        if (updateHash) {
+            window.location.hash = 'messages-panel';
+        }
     } else {
         commentsPanel.classList.remove('hidden-section');
         messagesPanel.classList.add('hidden-section');
         commentsTab.classList.add('active');
         messagesTab.classList.remove('active');
-        window.location.hash = 'comments-panel';
+        if (updateHash) {
+            window.location.hash = 'comments-panel';
+        }
     }
-}
-
-function toggleReplyForm(messageId) {
-    var form = document.getElementById('reply-form-' + messageId);
-    form.classList.toggle('hidden-section');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hash === '#messages-panel') {
-        toggleSection('messages');
+        toggleSection('messages', false);
     } else {
-        toggleSection('comments');
+        toggleSection('comments', false);
     }
 });
 
@@ -440,33 +1229,557 @@ document.addEventListener('input', function(e) {
     e.target.style.height = e.target.scrollHeight + 'px';
 });
 
+var detailImages = [];
+var detailIndex = 0;
+var lastWheelAt = 0;
+var detailSlider = null;
+var detailTrack = null;
+var detailIsDragging = false;
+var detailIsAnimating = false;
+var dragStartX = 0;
+var dragDeltaX = 0;
+
+function modDetailIndex(index, count) {
+    return ((index % count) + count) % count;
+}
+
+function setTrackOffset(deltaX, animate) {
+    if (!detailSlider || !detailTrack) return;
+    var width = detailSlider.clientWidth || 1;
+    detailTrack.style.transition = animate ? 'transform 220ms ease' : 'none';
+    detailTrack.style.transform = 'translate3d(' + (-width + deltaX) + 'px, 0, 0)';
+}
+
+function renderDetailSlides() {
+    if (!detailImages.length) return;
+    var count = detailImages.length;
+    detailIndex = modDetailIndex(detailIndex, count);
+
+    var imgPrev = document.getElementById('img-prev');
+    var imgCurrent = document.getElementById('img1');
+    var imgNext = document.getElementById('img-next');
+    var counter = document.getElementById('overlay-counter');
+
+    if (imgPrev) imgPrev.src = detailImages[modDetailIndex(detailIndex - 1, count)];
+    if (imgCurrent) imgCurrent.src = detailImages[detailIndex];
+    if (imgNext) imgNext.src = detailImages[modDetailIndex(detailIndex + 1, count)];
+    if (counter) counter.textContent = (detailIndex + 1) + ' / ' + count;
+
+    document.querySelectorAll('.detail-photo-thumb').forEach(function(img) {
+        img.classList.toggle('active', parseInt(img.dataset.index || '-1') === detailIndex);
+    });
+
+    setTrackOffset(0, false);
+}
+
+function setDetailImage(index) {
+    if (!detailImages.length) return;
+    detailIndex = index;
+    renderDetailSlides();
+}
+
+function animateDetailStep(step) {
+    if (!detailImages.length || detailImages.length <= 1 || detailIsAnimating) return;
+    detailIsAnimating = true;
+    var width = detailSlider ? (detailSlider.clientWidth || 1) : 1;
+    var targetDelta = step > 0 ? -width : width;
+    setTrackOffset(targetDelta, true);
+
+    detailTrack.addEventListener('transitionend', function done() {
+        detailIndex = modDetailIndex(detailIndex + (step > 0 ? 1 : -1), detailImages.length);
+        detailIsAnimating = false;
+        renderDetailSlides();
+    }, { once: true });
+}
+
+function beginDetailDrag(clientX) {
+    if (!detailSlider || !detailTrack || detailImages.length <= 1 || detailIsAnimating) return;
+    detailIsDragging = true;
+    dragStartX = clientX;
+    dragDeltaX = 0;
+    detailSlider.classList.add('is-grabbing');
+    setTrackOffset(0, false);
+}
+
+function updateDetailDrag(clientX) {
+    if (!detailIsDragging || !detailSlider) return;
+    var width = detailSlider.clientWidth || 1;
+    dragDeltaX = clientX - dragStartX;
+    if (dragDeltaX > width) dragDeltaX = width;
+    if (dragDeltaX < -width) dragDeltaX = -width;
+    setTrackOffset(dragDeltaX, false);
+}
+
+function endDetailDrag() {
+    if (!detailIsDragging || !detailSlider) return;
+    detailIsDragging = false;
+    detailSlider.classList.remove('is-grabbing');
+    var width = detailSlider.clientWidth || 1;
+    var threshold = Math.max(45, width * 0.16);
+    if (Math.abs(dragDeltaX) > threshold) {
+        animateDetailStep(dragDeltaX < 0 ? 1 : -1);
+    } else {
+        setTrackOffset(0, true);
+    }
+    dragDeltaX = 0;
+}
+
+function openDetailOverlay(index) {
+    var overlay = document.getElementById('overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(function() {
+        setDetailImage(index);
+    });
+}
+
+function closeDetailOverlay() {
+    var overlay = document.getElementById('overlay');
+    if (!overlay) return;
+    detailIsDragging = false;
+    dragDeltaX = 0;
+    if (detailSlider) {
+        detailSlider.classList.remove('is-grabbing');
+    }
+    setTrackOffset(0, false);
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+
+function moveDetailOverlay(step) {
+    if (!detailImages.length || !step) return;
+    animateDetailStep(step > 0 ? 1 : -1);
+}
+
+function openAvatarOverlay(src, altText) {
+    var avatarOverlay = document.getElementById('avatar-overlay');
+    var avatarImage = document.getElementById('avatar-overlay-image');
+    if (!avatarOverlay || !avatarImage || !src) return;
+    avatarImage.src = src;
+    avatarImage.alt = altText || 'Avatar preview';
+    avatarOverlay.style.display = 'flex';
+    avatarOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAvatarOverlay() {
+    var avatarOverlay = document.getElementById('avatar-overlay');
+    if (!avatarOverlay) return;
+    avatarOverlay.style.display = 'none';
+    avatarOverlay.setAttribute('aria-hidden', 'true');
+    var detailOverlay = document.getElementById('overlay');
+    if (!detailOverlay || detailOverlay.style.display !== 'flex') {
+        document.body.style.overflow = '';
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-    const img = document.getElementById("img1");
-    img.onload = function() {
-        if (img.naturalWidth > img.naturalHeight) {
-            img.classList.add("landscape");
+    var clickables = document.querySelectorAll('.js-detail-open');
+    if (!clickables.length) return;
+
+    detailImages = Array.from(clickables).map(function(el) { return el.getAttribute('src'); });
+    detailSlider = document.getElementById('overlay-slider');
+    detailTrack = document.getElementById('overlay-track');
+    setDetailImage(0);
+
+    clickables.forEach(function(el) {
+        el.style.cursor = 'zoom-in';
+        el.addEventListener('click', function() {
+            var idx = parseInt(el.dataset.index || '0');
+            openDetailOverlay(idx);
+        });
+    });
+
+    var overlay = document.getElementById('overlay');
+    var closeBtn = document.getElementById('overlay-close');
+    var prevBtn = document.getElementById('overlay-prev');
+    var nextBtn = document.getElementById('overlay-next');
+    var counter = document.getElementById('overlay-counter');
+
+    if (detailImages.length <= 1) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (counter) counter.style.display = 'none';
+        if (detailSlider) detailSlider.style.cursor = 'default';
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeDetailOverlay);
+    if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); moveDetailOverlay(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); moveDetailOverlay(1); });
+
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeDetailOverlay();
+            }
+        });
+
+        overlay.addEventListener('wheel', function(e) {
+            if (overlay.style.display !== 'flex' || detailImages.length <= 1 || detailIsAnimating) return;
+            e.preventDefault();
+            var now = Date.now();
+            if (now - lastWheelAt < 120) return;
+            lastWheelAt = now;
+            moveDetailOverlay(e.deltaY > 0 ? 1 : -1);
+        }, { passive: false });
+    }
+
+    if (detailSlider) {
+        detailSlider.addEventListener('touchstart', function(e) {
+            if (overlay.style.display !== 'flex' || !e.touches || !e.touches.length) return;
+            beginDetailDrag(e.touches[0].clientX);
+        }, { passive: true });
+
+        detailSlider.addEventListener('touchmove', function(e) {
+            if (!detailIsDragging || !e.touches || !e.touches.length) return;
+            updateDetailDrag(e.touches[0].clientX);
+            e.preventDefault();
+        }, { passive: false });
+
+        detailSlider.addEventListener('touchend', endDetailDrag, { passive: true });
+        detailSlider.addEventListener('touchcancel', endDetailDrag, { passive: true });
+
+        detailSlider.addEventListener('mousedown', function(e) {
+            if (overlay.style.display !== 'flex') return;
+            beginDetailDrag(e.clientX);
+            e.preventDefault();
+        });
+    }
+
+    window.addEventListener('mousemove', function(e) {
+        if (!detailIsDragging) return;
+        updateDetailDrag(e.clientX);
+    });
+
+    window.addEventListener('mouseup', function() {
+        endDetailDrag();
+    });
+
+    window.addEventListener('resize', function() {
+        if (overlay.style.display === 'flex') {
+            setTrackOffset(0, false);
         }
-    };
+    });
+
+    if (overlay) {
+        overlay.addEventListener('mouseleave', function() {
+            endDetailDrag();
+        });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  const toggles = document.querySelectorAll('.message-toggle');
+  const accordions = document.querySelectorAll('.message-thread-accordion');
+  if (!accordions.length) return;
+  const storageKey = 'adDetailMessageAccordions:v1:{{ ad.id }}';
 
-  toggles.forEach(toggle => {
-    toggle.addEventListener('click', function () {
-      const panelBody = this.nextElementSibling;
-      const icon = this.querySelector('.toggle-icon');
+  function clearPanelTransition(panel) {
+    if (!panel || !panel._collapseEndHandler) return;
+    panel.removeEventListener('transitionend', panel._collapseEndHandler);
+    panel._collapseEndHandler = null;
+  }
 
-      panelBody.classList.toggle('hidden-section');
+  function animatePanelOpen(panel, instant) {
+    if (!panel) return;
+    clearPanelTransition(panel);
 
-      // Change arrow direction
-      if (panelBody.classList.contains('hidden-section')) {
-        icon.textContent = '▼';
+    if (instant) {
+      panel.style.height = 'auto';
+      panel.style.opacity = '1';
+      panel.style.overflow = 'visible';
+      return;
+    }
+
+    panel.style.overflow = 'hidden';
+    panel.style.height = panel.offsetHeight + 'px';
+    panel.style.opacity = '0';
+    panel.offsetHeight;
+    panel.style.height = panel.scrollHeight + 'px';
+    panel.style.opacity = '1';
+
+    const onEnd = function (e) {
+      if (e.propertyName !== 'height') return;
+      clearPanelTransition(panel);
+      panel.style.height = 'auto';
+      panel.style.overflow = 'visible';
+    };
+    panel._collapseEndHandler = onEnd;
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  function animatePanelClose(panel, instant) {
+    if (!panel) return;
+    clearPanelTransition(panel);
+
+    if (instant) {
+      panel.style.height = '0px';
+      panel.style.opacity = '0';
+      panel.style.overflow = 'hidden';
+      return;
+    }
+
+    panel.style.overflow = 'hidden';
+    panel.style.height = panel.scrollHeight + 'px';
+    panel.style.opacity = '1';
+    panel.offsetHeight;
+    panel.style.height = '0px';
+    panel.style.opacity = '0';
+
+    const onEnd = function (e) {
+      if (e.propertyName !== 'height') return;
+      clearPanelTransition(panel);
+    };
+    panel._collapseEndHandler = onEnd;
+    panel.addEventListener('transitionend', onEnd);
+  }
+
+  function saveState() {
+    const openThreadKeys = Array.from(
+      document.querySelectorAll('.message-thread-accordion.open[data-thread-key]')
+    ).map(function (el) {
+      return el.dataset.threadKey;
+    });
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify({ openThreadKeys: openThreadKeys }));
+    } catch (err) {}
+  }
+
+  function restoreState() {
+    let raw = null;
+    try {
+      raw = sessionStorage.getItem(storageKey);
+    } catch (err) {
+      return;
+    }
+    if (!raw) return;
+
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      return;
+    }
+    if (!parsed || !Array.isArray(parsed.openThreadKeys)) return;
+
+    parsed.openThreadKeys.forEach(function (threadKey) {
+      const item = document.querySelector('.message-thread-accordion[data-thread-key="' + threadKey + '"]');
+      if (!item) return;
+      openAccordion(item, true);
+    });
+  }
+
+  function closeAccordion(item, instant) {
+    const button = item.querySelector('.message-accordion-btn');
+    const panel = item.querySelector('.message-accordion-panel');
+    if (!button || !panel) return;
+    item.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    animatePanelClose(panel, instant);
+  }
+
+  function openAccordion(item, instant) {
+    const button = item.querySelector('.message-accordion-btn');
+    const panel = item.querySelector('.message-accordion-panel');
+    if (!button || !panel) return;
+    item.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    animatePanelOpen(panel, instant);
+  }
+
+  accordions.forEach(function (item) {
+    const button = item.querySelector('.message-accordion-btn');
+    const panel = item.querySelector('.message-accordion-panel');
+    if (!button || !panel) return;
+    panel.style.height = '0px';
+    panel.style.opacity = '0';
+    panel.style.overflow = 'hidden';
+
+    button.addEventListener('click', function () {
+      const isOpen = item.classList.contains('open');
+
+      accordions.forEach(function (other) {
+        if (other !== item) closeAccordion(other, false);
+      });
+
+      if (isOpen) {
+        closeAccordion(item, false);
       } else {
-        icon.textContent = '▲';
+        openAccordion(item, false);
+      }
+      saveState();
+    });
+  });
+
+  restoreState();
+  saveState();
+
+  document.querySelectorAll('#messages-panel form').forEach(function (formEl) {
+    formEl.addEventListener('submit', saveState);
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  function closeMessageActionsOnOutside(e) {
+    if (e.target.closest('.message-actions')) return;
+    document.querySelectorAll('.message-actions[open]').forEach(function (menu) {
+      menu.open = false;
+    });
+  }
+
+  document.addEventListener('click', closeMessageActionsOnOutside);
+  document.addEventListener('touchstart', closeMessageActionsOnOutside);
+  document.addEventListener('pointerdown', closeMessageActionsOnOutside);
+
+  document.addEventListener('click', function (e) {
+    const deleteTrigger = e.target.closest('.js-message-delete-trigger');
+    if (deleteTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      const actions = deleteTrigger.closest('.message-actions');
+      if (!actions) return;
+      actions.classList.add('confirming');
+      actions.open = true;
+      return;
+    }
+
+    const deleteCancel = e.target.closest('.js-message-delete-cancel');
+    if (deleteCancel) {
+      e.preventDefault();
+      e.stopPropagation();
+      const actions = deleteCancel.closest('.message-actions');
+      if (!actions) return;
+      actions.classList.remove('confirming');
+      actions.open = true;
+    }
+  });
+
+  document.querySelectorAll('.message-actions').forEach(function (menu) {
+    menu.addEventListener('toggle', function () {
+      if (menu.open) {
+        document.querySelectorAll('.message-actions[open]').forEach(function (other) {
+          if (other !== menu) {
+            other.open = false;
+          }
+        });
+      }
+      if (!menu.open) {
+        menu.classList.remove('confirming');
       }
     });
   });
+
+  const avatarOverlay = document.getElementById('avatar-overlay');
+  const avatarCloseBtn = document.getElementById('avatar-overlay-close');
+  const avatarThumbs = document.querySelectorAll('.js-avatar-open');
+
+  avatarThumbs.forEach(function (avatarThumb) {
+    avatarThumb.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const src = avatarThumb.getAttribute('data-avatar-src') || avatarThumb.getAttribute('src');
+      openAvatarOverlay(src, avatarThumb.getAttribute('alt'));
+    });
+  });
+
+  if (avatarCloseBtn) {
+    avatarCloseBtn.addEventListener('click', closeAvatarOverlay);
+  }
+
+  if (avatarOverlay) {
+    avatarOverlay.addEventListener('click', function (e) {
+      if (e.target === avatarOverlay) {
+        closeAvatarOverlay();
+      }
+    });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const stars = document.querySelectorAll('.detail-rate-stars .detail-rate-star');
+  if (!stars.length) return;
+
+  function paintDetailStars(adId, value) {
+    document.querySelectorAll('.detail-rate-stars[data-ad="' + adId + '"] .detail-rate-star')
+      .forEach(s => {
+        const isFilled = parseInt(s.dataset.value) <= value;
+        s.classList.toggle('active', isFilled);
+        s.classList.toggle('fa-star', isFilled);
+        s.classList.toggle('fa-star-o', !isFilled);
+      });
+  }
+
+  document.querySelectorAll('.detail-rate-stars').forEach(group => {
+    const selected = group.querySelectorAll('.detail-rate-star.active').length;
+    group.dataset.selected = selected;
+    paintDetailStars(group.dataset.ad, selected);
+  });
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', function () {
+      const value = parseInt(this.dataset.value);
+      const adId = this.dataset.ad;
+      paintDetailStars(adId, value);
+    });
+
+    star.addEventListener('mouseout', function () {
+      const adId = this.dataset.ad;
+      const group = document.querySelector('.detail-rate-stars[data-ad="' + adId + '"]');
+      const selected = parseInt((group && group.dataset.selected) || '0');
+      paintDetailStars(adId, selected);
+    });
+
+    star.addEventListener('click', function () {
+      const value = parseInt(this.dataset.value);
+      const adId = this.dataset.ad;
+      const group = document.querySelector('.detail-rate-stars[data-ad="' + adId + '"]');
+      if (group) group.dataset.selected = value;
+      paintDetailStars(adId, value);
+      rateAdDetail(adId, value);
+    });
+  });
+});
+
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.message-actions')) return;
+  const bubble = e.target.closest('.js-message-toggle');
+  if (!bubble) return;
+  const item = bubble.closest('.message-item');
+  const isOpen = item.classList.toggle('show-meta');
+  bubble.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+});
+
+document.addEventListener('keydown', function (e) {
+  var avatarOverlay = document.getElementById('avatar-overlay');
+  if (avatarOverlay && avatarOverlay.style.display === 'flex' && e.key === 'Escape') {
+    closeAvatarOverlay();
+    return;
+  }
+
+  var overlay = document.getElementById('overlay');
+  if (overlay && overlay.style.display === 'flex') {
+    if (e.key === 'Escape') {
+      closeDetailOverlay();
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      moveDetailOverlay(-1);
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      moveDetailOverlay(1);
+      return;
+    }
+  }
+
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  if (!e.target.classList.contains('js-message-toggle')) return;
+  e.preventDefault();
+  const item = e.target.closest('.message-item');
+  const isOpen = item.classList.toggle('show-meta');
+  e.target.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 });
 
 </script>

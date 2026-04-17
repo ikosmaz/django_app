@@ -12,8 +12,8 @@ input[type=text] {color:#333333;
   border: 2px solid #e5e5e5;
   border-radius: 5px;}
 input[type=text]:focus {border-color:#009a90; outline:none;}
-.notes {border:1px solid #d9d9d9; border-radius:5px; padding:10px; background-color:#ffffff; color:#777777; margin-bottom:10px;}
-.notes details > summary {cursor:pointer; color:#006d66; font-weight:600; margin-bottom:10px;}
+.notes {border:1px solid #d9d9d9; border-radius:5px; padding:20px; background-color:#ffffff; color:#777777; margin:-20px;margin-top:0;}
+.notes details > summary {cursor:pointer; color:#006d66; font-weight:600; margin-bottom:10px;min-height:40px;}
 .notes p {margin:0 0 8px 0;}
 .notes-list {margin:0 0 8px 18px; padding:0;}
 .notes-list li {margin-bottom:4px;}
@@ -22,17 +22,32 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 .fa-heart, .fa-heart-o {margin-top:0;}
 .ads-list {list-style:none; padding-left:0; margin:0;}
 .adlist {margin:0 0 8px 0; padding:5px; border:1px solid #d9d9d9; border-radius:5px; background-color:#ffffff; box-shadow:0 2px 5px rgba(0,0,0,0.08);}
-.ad-row {display:grid; grid-template-columns:90px auto; gap:10px; height: 100%; align-items:start;}
-.ad-thumb {width:90px; height:90px; object-fit:cover; border:1px solid #e5e5e5; border-radius:4px; display:block;}
-.ad-thumb-placeholder {width:90px; height:90px; border:1px solid #e5e5e5; border-radius:4px; background-color:#f2f2f2;}
-.ad-content {display:flex; flex-direction: column;justify-content: space-between;}
+.ad-row {display:grid; grid-template-columns:150px minmax(0, 1fr); gap:12px; align-items:stretch; min-height:150px;}
+.ad-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0;
+    border-radius: 0;
+    display: block;
+    background: #f2f2f2;
+}
+.ad-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background-color: #f2f2f2;
+}
+.ad-content {display:grid; grid-template-rows:auto auto auto auto; gap:7px; min-width:0; padding:8px 8px 8px 0;}
 .ad-title-row {display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
-.ad-title-left {display: flex;justify-content: space-between;align-items: center;width: 100%;}
+.ad-title-left {min-width:0;}
+.ad-title-left a {font-weight:600; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 /*.ad-title-right {flex:0 0 auto; line-height:1;}*/
-.price-text {margin-left: auto;font-size:1.3rem;}
+.price-text {margin-left: auto; font-size:1.2rem; white-space:nowrap; font-weight:600;}
 
-.ad-desc {margin-top:6px;margin-bottom:10px;}
-.ad-meta {color:#777777; margin-top:4px; display:block;}
+.ad-desc {margin:0; color:#2f2f2f;}
+.ad-meta {color:#777777; margin:0; display:block;}
 .pagination {margin-top: 10px; display: flex; justify-content:center; font-size: 1.5rem;gap: 2px;}
 .pagination .page-item.active .page-link {
     background-color: #08ced1 !important;
@@ -57,7 +72,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-bottom: 12px; /* spacing between rows */
-    padding: 15px;
+    padding: 0;
     min-height: 100px;
     overflow: hidden;
     position: relative;
@@ -80,8 +95,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
   min-width: 102px;
 }
 
-
-.price-text {display:flex; align-items:right;}
+.price-text {display:inline-block;}
 
 .ads-list .col-xs-12 {
     padding-left: 0 !important;
@@ -96,17 +110,67 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 
 /* Left area star block */
 .ad-left {
-    width: 90px;
-    display: flex;
-    flex-direction: column;
+    width: 150px;
+    position: relative;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px 0 0 4px;
+    overflow: hidden;
+    background: #f2f2f2;
+    display: block;
+}
+
+.ad-image-link {
+    display: block;
+    height: 150px;
+    width: 100%;
+}
+
+.ad-fav-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+
+.ad-fav-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.68);
+    display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding-top: 2px;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.ad-fav-btn:hover,
+.ad-fav-btn:focus,
+.ad-fav-btn:active {
+    text-decoration: none;
+}
+
+.ad-fav-btn .fa {
+    color: #fff;
+    padding-top: 0;
+    font-size: 1.15rem;
+}
+
+.ad-fav-btn:hover {
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.rate-stars-overlay {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: flex-end;
 }
 
 /* Default empty star */
 .rate-stars .star {
-    font-size: 11px;
+    font-size: 12px;
     color: #ccc;
     cursor: pointer;
     transition: color 0.15s ease;
@@ -124,11 +188,21 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 }
 
 /* Rating stars (logged‑in) */
+.rate-stars {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.72);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 .rate-stars i {
     color: #f5c518;
     cursor: pointer;
-    font-size: 14px;
-    margin-right: 2px;
+    font-size: 12px;
+    margin-right: 0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
 /* Gray border stars for rating */
@@ -138,22 +212,70 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 
 /* Average rating row */
 .avg-rating {
-    margin-top: 5px;
     font-size: 12px;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: left;
     gap: 3px;
+    margin: 0;
 }
 .avg-rating i {
     color: #f5c518;
-    margin-left: 2px;
+    margin-left: 0;
     font-size: 13px;
 }
 
+.ad-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+}
 
-#apply-filter:hover {background-color:#406b9c !important;}
+.ad-counters {
+    color: #000000;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .ad-row {
+        grid-template-columns: 130px minmax(0, 1fr);
+        min-height: 130px;
+    }
+    .ad-left {
+        width: 130px;
+    }
+    .ad-image-link {
+        height: 130px;
+    }
+    .ad-thumb {
+        height: 100%;
+    }
+}
+
+
+#apply-filter {
+    background-color: #ccf3dc;
+    border-color: #ccf3dc;
+    border-width: 2px;
+    background-image: none !important;
+    text-shadow: none;
+    color: #151414;
+    letter-spacing: 0.2px;
+}
+
+#apply-filter:hover,
+#apply-filter:focus,
+#apply-filter:active {
+    background-color: #0083d1 !important;
+    border-color: #0083d1 !important;
+    background-image: none !important;
+    text-shadow: none;
+    color: #ffffff !important;
+}
 
 #filterArea {
     overflow: hidden;
@@ -248,6 +370,21 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
     <div class="col-xs-12 col-sm-6">
         <div class="search-box">
             <form>
+                {% if request.GET.city %}
+                <input type="hidden" name="city" value="{{ request.GET.city }}">
+                {% endif %}
+                {% if request.GET.category %}
+                <input type="hidden" name="category" value="{{ request.GET.category }}">
+                {% endif %}
+                {% if request.GET.min_price %}
+                <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+                {% endif %}
+                {% if request.GET.max_price %}
+                <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+                {% endif %}
+                {% if request.GET.sort %}
+                <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+                {% endif %}
                 <div class="search-wrapper">
                     <i class="fa fa-search search-icon-left"></i>
                     <input type="text"
@@ -285,6 +422,9 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
         <div id="filterArea" style="margin-top:5px;">
 
         <form method="get" class="row">
+        {% if request.GET.search %}
+        <input type="hidden" name="search" value="{{ request.GET.search }}">
+        {% endif %}
 
         <!-- CITY FILTER -->
         <div class="col-xs-6 col-sm-4" style="margin-bottom:10px;">
@@ -303,7 +443,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
             <select name="category" class="form-control">
                 <option value="">Category (All)</option>
                 {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -320,21 +460,21 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
         <div class="col-xs-6 col-sm-4" style="margin-bottom:10px;">
             <select name="sort" class="form-control">
                 <option value="">Sort by</option>
-                <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}><i class="fas fa-star"></i>Rating</option>
-                <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}><i class="fas fa-bell"></i>Newest</option>
-                <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}><i class="fas fa-sort-amount-down"></i> Price high to low</option>
-                <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}><i class="fas fa-sort-amount-up-alt"></i> Price low to high</option>
+                <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}><i class="fas fa-star"></i>★ Rating</option>
+                <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}><i class="fas fa-bell"></i> 🆕 Newest</option>
+                <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}><i class="fas fa-sort-amount-down"></i> 🔽 Price high to low</option>
+                <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}><i class="fas fa-sort-amount-up-alt"></i> 🔼 Price low to high</option>
             </select>
         </div>
 
         <!-- APPLY FILTERS -->
         <div class="col-xs-12 col-sm-4" style="margin-bottom:10px;">
-            <button class="btn btn-primary" id="apply-filter" type="submit" style="width:100%;">Apply Filters</button>
+            <button class="btn btn-primary" id="apply-filter" type="submit" style="width:100%;"><b>Apply Filters</b></button>
         </div>
 
         <!-- RESET -->
         <div class="col-xs-12 col-sm-4" style="margin-bottom:10px;">
-            <a href="{% url 'ads:all' %}" class="btn btn-default" style="width:100%;margin-bottom:15px">Reset</a>
+            <a href="{% url 'ads:all' %}" class="btn btn-default" style="width:100%;margin-bottom:15px"><b>Reset</b></a>
         </div>
 
         </form>
@@ -384,115 +524,116 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
   {% for ad in ad_list %}
     <div class="col-xs-12 col-sm-12 col-md-6 custom-row-padding">
 
-      <div class="ad-card" style="padding:6px;">
+      <div class="ad-card">
         <div class="ad-card-inner">   <!-- ✅ required wrapper -->
 
           <div class="ad-row">
 
             <div class="ad-left">
-            <a href="{% url 'ads:ad_detail' ad.id %}">
-              {% if ad.thumbnail %}
-                <img class="ad-thumb" src="{{ ad.thumbnail.url }}" alt="">
-              {% else %}
-                <img class="ad-thumb" src="{% static 'no_image.png' %}" alt="">
-              {% endif %}
-            </a>
+              <a href="{% url 'ads:ad_detail' ad.id %}" class="ad-image-link">
+                {% if ad.thumbnail %}
+                  <img class="ad-thumb" src="{{ ad.thumbnail.url }}" alt="">
+                {% else %}
+                  <img class="ad-thumb" src="{% static 'no_image.png' %}" alt="">
+                {% endif %}
+              </a>
 
-                {% if user.is_authenticated and user != ad.owner %}
-                <div class="rate-stars" data-ad="{{ ad.id }}">
-                    {% for i in "12345" %}
-                    <i class="fa fa-star-o star"
-                    {% if ad.user_rating and forloop.counter <= ad.user_rating %}active{% endif %}
-                        data-value="{{ forloop.counter }}"
-                        data-ad="{{ ad.id }}">
-                    </i>
-                    {% endfor %}
+                {% if user.is_authenticated %}
+                <div class="ad-fav-overlay">
+                    <a href="#" title="Unlike"
+                        onclick="adPost('{% url 'ads:ad_unfavorite' ad.id %}', {{ ad.id }} );return false;"
+                        {% if ad.id not in favorites %} style="display: none;" {% endif %}
+                        id="favorite_star_{{ad.id}}" class="ad-fav-btn">
+                        <i class="fa fa-heart"></i>
+                    </a>
+                    <a href="#" title="Like"
+                        onclick="adPost('{% url 'ads:ad_favorite' ad.id %}', {{ ad.id }} );return false;"
+                        {% if ad.id in favorites %} style="display: none;" {% endif %}
+                        id="unfavorite_star_{{ad.id}}" class="ad-fav-btn">
+                        <i class="fa fa-heart-o"></i>
+                    </a>
                 </div>
                 {% endif %}
 
+                {% if user.is_authenticated and user != ad.owner %}
+                <div class="rate-stars-overlay">
+                  <div class="rate-stars" data-ad="{{ ad.id }}">
+                      {% for i in "12345" %}
+                      <i class="fa {% if ad.user_rating and forloop.counter <= ad.user_rating %}fa-star active{% else %}fa-star-o{% endif %} star"
+                          data-value="{{ forloop.counter }}"
+                          data-ad="{{ ad.id }}">
+                      </i>
+                      {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
 
             </div>
 
             <div class="ad-content">
               <div class="ad-title-row">
                 <div class="ad-title-left">
-                  {% if ad.title|length < 35 %}
-                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title }}</a>
+                  {% if ad.price < 1000 %}
+                  {% if ad.title|length < 25 %}
+                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title|capfirst }}</a>
                   {% else %}
-                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title|slice:"0:34" }}...</a>
+                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title|slice:"0:24"|capfirst }}...</a>
                   {% endif %}
-                  <span class="price-text">{{ ad.price }} NOK</span>
+                  {% else %}
+                  {% if ad.title|length < 21 %}
+                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title|capfirst }}</a>
+                  {% else %}
+                  <a href="{% url 'ads:ad_detail' ad.id %}">{{ ad.title|slice:"0:20"|capfirst }}...</a>
+                  {% endif %}
+                  {% endif %}
+
                 </div>
+                <span class="price-text">{{ ad.price }} NOK</span>
               </div>
 
-              <hr>
-
               <div class="ad-desc">
-                {% if ad.text|length < 45 %}
-                  {{ ad.text }}
+                {% if ad.text|length < 40 %}
+                  {{ ad.text|capfirst }}
                 {% else %}
-                  {{ ad.text|slice:"0:44" }}
-                  <a href="{% url 'ads:ad_detail' ad.id %}">...</a>
+                  {{ ad.text|slice:"0:35"|capfirst }} ...
+
                 {% endif %}
               </div>
 
               <p class="poster-info">
                 <small class="ad-meta">
                     {% if ad.owner.username %}
-                        posted by [ {{ ad.owner.username }} ]
+                        posted by
+                        {% if ad.owner_id == user.id %} <b>You</b> <i class="fas fa-user-edit"></i> {% else %} [{{ ad.owner.username }}] {% endif %}
+                         {{ ad.natural_updated }}
                     {% endif %}
-                    {{ ad.natural_updated }}
                 </small>
-                {% if user.is_authenticated %}
-                    <span class="edit-icons">
-                        <a href="#" title="Unlike" onclick=
-                            "adPost('{% url 'ads:ad_unfavorite' ad.id %}', {{ ad.id }} );return false;"
-                            {% if ad.id not in favorites %} style="display: none;" {% endif %}
-                            id="favorite_star_{{ad.id}}">
-                        <span class="fa-stack" style="vertical-align:middle;">
-                            <i class="fas fa-heart fa-stack-1x" style="color:#009a90;"></i>
-                            <i class="fas fa-heart-o fa-stack-1x"></i>
-                        </span>
-                        </a>
-                        <!-- the second href -->
-                        <a href="#" title="Like" onclick=
-                             "adPost('{% url 'ads:ad_favorite' ad.id %}', {{ ad.id }} );return false;"
-                            {% if ad.id in favorites %} style="display: none;" {% endif %}
-                            id="unfavorite_star_{{ad.id}}">
-                        <span class="fa-stack" style="vertical-align: middle;">
-                            <i class="fa fa-heart fa-stack-1x" style="display: none; color:#009a90;"></i>
-                            <i class="fa fa-heart-o fa-stack-1x"></i>
-                        </span>
-                        </a>
-                        {% if ad.owner_id == user.id %}
-                        <span style="margin-left:-5px">
-                            <!--<a title="Edit" href="{% url 'ads:ad_update' ad.id %}"><i class="fa fa-pencil"></i></a> |
-                            <a title="Delete" href="{% url 'ads:ad_delete' ad.id %}"><i class="fa fa-trash"></i></a>-->
-                            <i class="fas fa-user-edit"></i>
-                        </span>
-                        {% endif %}
-                    </span>
-                    {% endif %}
+              </p>
 
-                </p>
+              <div class="ad-stats-row">
+                <div class="avg-rating" id="avg-stars-{{ ad.id }}">
+                        {% if ad.total_ratings_db %}
+                        <i class="fa fa-star" style="color:#f5c518; margin-bottom:2px;"></i>
+                        {{ ad.average_rating_db|floatformat:1 }} ({{ ad.total_ratings_db }} {% if ad.total_ratings_db < 2 %} rating{% else %} ratings{% endif %})
+                        {% else %}
+                        (No rating yet)
+                        {% endif %}
+                </div>
+                <div class="ad-counters">
+                    <small class="ad-like-count" id="like-count-{{ad.id}}">
+                        {{ ad.like_count }}
+                    </small>
+                    <small class="ad-like-count">{% if ad.like_count %} <i class="fas fa-heart" style="color:#009a90;"></i> {% else %} <i class="far fa-heart" style="color:#009a90;"></i> {% endif %}</small>
+                    <small class="ad-like-count">
+                        | {{ad.all_comments_count}} {% if ad.all_comments_count %} <i class="fas fa-comments" style="color:#009a90;"></i> {% else %} <i class="far fa-comments" style="color:#009a90;"></i> {% endif %}
+                    </small>
+                </div>
+              </div>
 
             </div>
 
           </div>
-          <div>
-            <div class="avg-rating" id="avg-stars-{{ ad.id }}">
-                    <i class="fa fa-star" style="color:#f5c518; margin-bottom:2px;"></i>
-                    {{ ad.average_rating_db|floatformat:1 }} ({{ ad.total_ratings }} ratings)
-            </div>
-            <p class="poster-info" style="justify-content: flex-end !important;margin-top:-17px">
-                <!-- like counts -->
-                        <small class="ad-like-count" id="like-count-{{ad.id}}">
-                            {{ ad.like_count }} favs
-                        </small>
-                        <small class="ad-like-count">
-                            &nbsp;| {{ad.all_comments_count}} comments
-                        </small>
-            </p></div>
+
         </div> <!-- end ad-card-inner -->
       </div> <!-- end ad-card -->
 
@@ -511,7 +652,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
     {% if page_obj.has_previous %}
       <li class="page-item">
         <a class="page-link"
-           href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+           href="?page={{ page_obj.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">
           « Previous
         </a>
       </li>
@@ -530,7 +671,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
       {% else %}
         <li class="page-item">
           <a class="page-link link-num"
-             href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+             href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">
             {{ num }}
           </a>
         </li>
@@ -541,7 +682,7 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
     {% if page_obj.has_next %}
       <li class="page-item">
         <a class="page-link"
-           href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+           href="?page={{ page_obj.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">
           Next »
         </a>
       </li>
@@ -555,28 +696,33 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 </nav>
 <p style="text-align:center;margin-top:-15px;">{{ number_per_page }} ads per page</p>
 
-<div class="notes" style="background-color: var(--surface); color:#1a1a1a;">
+<div class="notes accordion" style="background-color: var(--surface); color:#1a1a1a;">
 <details>
   <summary><i class="fa fa-arrow-down"></i>   Notes for the web site   <i class="fa fa-arrow-down"></i></summary>
   <p>This webapp is a project made for Coursera Django for Everybody, and added some other features after the course. </p>
-  <p>Tags: Python, Django, Bootstrap, css, js, fontawsome, avatar</p>
+  <p>Tags: Python, Django, Bootstrap, css, js, fontawsome, avatar, search, filter</p>
   <p>Logged in users can:</p>
   <ul class="notes-list">
-    <li>add an ad</li>
-    <li>comment on ads</li>
-    <li>send encrypted in app messages to the ad owner</li>
-    <li>use emojis on ad title, comments and messages</li>
-    <li>like ads and comments</li>
-    <li>rate others ads</li>
-    <li>edit/delete own ads and delete own comments</li>
-    <li>send an email to get reset password link</li>
-    <li>admin can manage users and ads on admin panel</li>
+    <li>add an ad.</li>
+    <li>comment on ads.</li>
+    <li>send encrypted in-app messages to the ad owner.</li>
+    <li>use emojis on ad title, comments and messages.</li>
+    <li>use photo as avatar, default gavatar.</li>
+    <li>like ads and comments.</li>
+    <li>rate others ads.</li>
+    <li>edit/delete own ads and delete own comments.</li>
+    <li>send email to get reset password link.</li>
   </ul>
-  <p>Github account can be used to login (social login)</p>
-  <p>Up to 3MB photos can be added to ads</p>
-  <p>Search function works through all ad titles and ad details</p>
+  <p>Admin can manage users and ads on admin panel.</p>
+  <p>Github account can be used to login (social login).</p>
+  <p>Email activation is required to use the app.</p>
+  <p>Email confirmation is required to delete the account.</p>
+  <p>Photos (5 max) can be added to ads, no size limit but they are saved as compressed to max 1MB in the app.</p>
+  <p>Search function works through all ad titles and ad details.</p>
+  <p>Filter feature added.</p>
+  <p>The app is responsive and works on all devices.</p>
   <hr>
-  <p>To test the site, you can create an account, login with github or login with guest login info below</p>
+  <p>To test the site, you can create an account, login with github or login with guest login info below:</p>
   <p>username: Guest <br>password: Test.the_app</p>
   <hr>
   <p>If interested please send email to <a href="mailto:isakosmaz@gmail.com">isakosmaz@gmail.com</a></p>
@@ -589,44 +735,44 @@ input[type=text]:focus {border-color:#009a90; outline:none;}
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // HANDLE HOVER EFFECT
-    document.querySelectorAll(".rate-stars .star").forEach(star => {
+    function paintListStars(adId, value) {
+        document.querySelectorAll('.rate-stars[data-ad="' + adId + '"] .star')
+            .forEach(s => {
+                const isFilled = parseInt(s.dataset.value) <= value;
+                s.classList.toggle("active", isFilled);
+                s.classList.toggle("fa-star", isFilled);
+                s.classList.toggle("fa-star-o", !isFilled);
+            });
+    }
 
+    document.querySelectorAll(".rate-stars").forEach(group => {
+        const selected = group.querySelectorAll(".star.active").length;
+        group.dataset.selected = selected;
+        paintListStars(group.dataset.ad, selected);
+    });
+
+    document.querySelectorAll(".rate-stars .star").forEach(star => {
         star.addEventListener("mouseover", function () {
             const value = parseInt(this.dataset.value);
             const adId = this.dataset.ad;
-
-            document.querySelectorAll('.rate-stars[data-ad="' + adId + '"] .star')
-                .forEach(s => {
-                    s.classList.toggle("hovered", parseInt(s.dataset.value) <= value);
-                });
+            paintListStars(adId, value);
         });
 
         star.addEventListener("mouseout", function () {
             const adId = this.dataset.ad;
-            document.querySelectorAll('.rate-stars[data-ad="' + adId + '"] .star')
-                .forEach(s => s.classList.remove("hovered"));
+            const group = document.querySelector('.rate-stars[data-ad="' + adId + '"]');
+            const selected = parseInt((group && group.dataset.selected) || "0");
+            paintListStars(adId, selected);
         });
-
-    });
-
-    // HANDLE CLICK (SET RATING)
-    document.querySelectorAll(".rate-stars .star").forEach(star => {
 
         star.addEventListener("click", function () {
             const value = parseInt(this.dataset.value);
             const adId = this.dataset.ad;
-
-            // Update UI instantly
-            document.querySelectorAll('.rate-stars[data-ad="' + adId + '"] .star')
-                .forEach(s => {
-                    s.classList.toggle("active", parseInt(s.dataset.value) <= value);
-                });
-
-            // Send rating to server
+            const group = document.querySelector('.rate-stars[data-ad="' + adId + '"]');
+            if (group) group.dataset.selected = value;
+            paintListStars(adId, value);
             rateAd(adId, value);
         });
-
     });
 
 });
@@ -644,19 +790,19 @@ function adPost(url, ad_id) {
             // ✅ Toggle icons (like/unlike)
             document.getElementById("favorite_star_" + ad_id).style.display =
                 document.getElementById("favorite_star_" + ad_id).style.display === "none"
-                ? "inline"
+                ? "inline-flex"
                 : "none";
 
             document.getElementById("unfavorite_star_" + ad_id).style.display =
                 document.getElementById("unfavorite_star_" + ad_id).style.display === "none"
-                ? "inline"
+                ? "inline-flex"
                 : "none";
 
             // ✅ Update like count if you want
             const countEl = document.getElementById("like-count-" + ad_id);
             if (countEl) {
                 countEl.innerHTML = `
-                    ${data.like_count} favs
+                    ${data.like_count}
                 `;
             }
         })

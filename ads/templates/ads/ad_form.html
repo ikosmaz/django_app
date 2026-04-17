@@ -6,26 +6,67 @@
   <form action="" method="post" id="upload_form" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}
+    {% if ad and ad.pk and ad_photos %}
+    <div style="margin-top:12px;">
+      <p><strong>Current photos (max 5 total)</strong></p>
+      <div style="display:flex; gap:8px; overflow-x:auto;">
+        {% for photo in ad_photos %}
+        <div class="existing-photo-card" data-photo-id="{{ photo.id }}" style="position:relative;">
+          <img src="{{ photo.image.url }}" alt="" style="height:90px; width:auto; border:1px solid #d9d9d9; border-radius:6px;">
+          <button
+            class="photo-delete-btn"
+            type="button"
+            data-photo-id="{{ photo.id }}"
+            aria-label="Delete photo"
+            style="position:absolute; top:4px; right:4px; border:0; border-radius:50%; width:22px; height:22px; line-height:20px; font-size:14px; font-weight:bold; color:#fff; background:#800020; padding:0;"
+          >x</button>
+          {% if photo.is_cover %}
+          <span style="position:absolute; top:4px; left:4px; background:#009a90; color:#fff; font-size:11px; padding:2px 6px; border-radius:999px;">Cover</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <div id="delete-photo-inputs"></div>
     <input class="btn btn-secondary" style="background:#008005;color:#ffffff;" type="submit" value="Save">
-    {% if ad %}
-    <input class="btn btn-secondary" style="background:#1c1cf0;color:#ffffff;" type="submit" value="Cancel" onclick="window.location.href='{% url 'ads:ad_detail' ad.id %}';return false;">
-    <input class="btn btn-secondary" style="background:#800020; color:#ffffff;" type="submit" value="Delete the Ad" onclick="window.location.href='{% url 'ads:ad_delete' ad.id %}';return false;">
+    {% if ad and ad.pk %}
+    <input class="btn btn-secondary" style="background:#1c1cf0;color:#ffffff;" type="submit" value="Cancel" onclick="window.location.href='{% url 'ads:ad_detail' ad.pk %}';return false;">
+    <input class="btn btn-secondary" style="background:#800020; color:#ffffff;" type="submit" value="Delete the Ad" onclick="window.location.href='{% url 'ads:ad_delete' ad.pk %}';return false;">
     {% else %}
     <input class="btn btn-secondary" style="background:#1c1cf0;color:#ffffff;" type="submit" value="Cancel" onclick="window.location.href='{% url 'ads:all' %}';return false;">
     {% endif %}
   </form>
 </p>
-<!-- https://stackoverflow.com/questions/2472422/django-file-upload-size-limit -->
 <script>
-$("#upload_form").submit(function() {
-  console.log('Checking file size');
-  if (window.File && window.FileReader && window.FileList && window.Blob) {
-      var file = $('#id_{{ form.upload_field_name }}')[0].files[0];
-      if (file && file.size > {{ form.max_upload_limit }} ) {
-          alert("File " + file.name + " of type " + file.type + " must be < {{ form.max_upload_limit_text }}");
-      return false;
+  (function () {
+    var container = document.getElementById("delete-photo-inputs");
+    if (!container) {
+      return;
     }
-  }
-});
+
+    var deleted = new Set();
+    var deleteButtons = document.querySelectorAll(".photo-delete-btn");
+    deleteButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var photoId = button.getAttribute("data-photo-id");
+        if (!photoId || deleted.has(photoId)) {
+          return;
+        }
+        deleted.add(photoId);
+
+        var input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "delete_photo_ids";
+        input.value = photoId;
+        container.appendChild(input);
+
+        var card = button.closest(".existing-photo-card");
+        if (card) {
+          card.style.display = "none";
+        }
+      });
+    });
+  })();
 </script>
 {% endblock %}
