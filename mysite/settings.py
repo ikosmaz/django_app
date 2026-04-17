@@ -66,7 +66,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap3"]
 #Session expiry period
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 2592000  # 30 days (default)
-
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 24 hours
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -115,9 +115,9 @@ if USE_PYTHONANYWHERE_DB: #should be customized for production
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('MYSQL_DATABASE', 'db_name'),
-            'USER': os.environ.get('MYSQL_USER', 'db_username'),
-            'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'db_password'),
+            'NAME': os.environ.get('MYSQL_DATABASE', 'ikosmaz$MySQL'),
+            'USER': os.environ.get('MYSQL_USER', 'ikosmaz'),
+            'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'dbase_1234'),
             'HOST': os.environ.get('MYSQL_HOST', 'ikosmaz.mysql.pythonanywhere-services.com'),
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
