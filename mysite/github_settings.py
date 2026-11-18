@@ -16,8 +16,8 @@
 
 # Then copy the client_key and secret to this file
 
-SOCIAL_AUTH_GITHUB_KEY = 'd6119ea57f2ab75766a8'
-SOCIAL_AUTH_GITHUB_SECRET = 'a25a394f4afd90f1c4fc53c50c49b49e5ade8768'
+SOCIAL_AUTH_GITHUB_KEY = ''
+SOCIAL_AUTH_GITHUB_SECRET = ''
 
 # Ask for the user's email (don't edit this line)
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
